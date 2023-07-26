@@ -1,309 +1,196 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  
-  
-  <title>Jyjays&#39;s record</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="一个杰米的CS学习小站">
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Jyjays's record</title><meta name="author" content="John Doe"><meta name="copyright" content="John Doe"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一个杰米的CS学习小站">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Jyjays&#39;s record">
 <meta property="og:url" content="http://example.com/index.html">
 <meta property="og:site_name" content="Jyjays&#39;s record">
 <meta property="og:description" content="一个杰米的CS学习小站">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Jyjays\'s record',
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2023-07-26 22:30:18'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
   
-    <link rel="alternate" href="/atom.xml" title="Jyjays's record" type="application/atom+xml">
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
   
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
   
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
     
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
-
-  
-  
-<link rel="stylesheet" href="/css/style.css">
-
-  
-    
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
-
-  
-  
-<meta name="generator" content="Hexo 6.3.0"></head>
-
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">Jyjays&#39;s record</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
         
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-        
-          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
-        
-        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
-      </div>
-    </div>
-  </div>
-</header>
-
-      <div class="outer">
-        <section id="main">
-  
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/07/26/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2023-07-26T14:05:38.805Z" itemprop="datePublished">2023-07-26</time>
-</a>
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
     
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/07/26/hello-world/">Hello World</a>
-    </h1>
-  
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div><hr class="custom-hr"/></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Jyjays's record"><span class="site-name">Jyjays's record</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="site-info"><h1 id="site-title">Jyjays's record</h1></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/07/26/hello-world/" title="Hello World">Hello World</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2023-07-26T14:05:38.805Z" title="Created 2023-07-26 22:05:38">2023-07-26</time></span></div><div class="content">Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
+Quick StartCreate a new post1$ hexo new &quot;My New Post&quot;
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+More info: Writing
+Run server1$ hexo server
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+More info: Server
+Generate static files1$ hexo generate
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+More info: Generating
+Deploy to remote sites1$ hexo deploy
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+More info: Deployment
+</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2023/07/26/%E5%B9%B6%E5%8F%91/" title="No title">No title</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2023-07-26T05:03:12.000Z" title="Created 2023-07-26 13:03:12">2023-07-26</time></span></div><div class="content">并发Gorountines在Go语言中，每一个并发的执行单元叫作一个goroutine。设想这里的一个程序有两个函数，一个函数做计算，另一个输出结果，假设两个函数没有相互之间的调用关系。一个线性的程序会先调用其中的一个函数，然后再调用另一个。如果程序中包含多个goroutine，对两个函数的调用则可能发生在同一时刻。
+‍
+‍
+线程和协程​​
+​​​​
+协程和线程的区别协程（Coroutine）和线程（Thread）都是并发编程中用于实现并发执行的概念，但它们在实现方式和用途上有一些重要的区别。
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+调度方式：
 
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/07/26/hello-world/" data-id="clkjtbfgt0000n8cf06ojb987" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
+线程是由操作系统内核进行调度和管理的，称为内核线程。线程切换由操作系统完成，切换开销较大。
+协程是由编程语言的运行时环境（如Go语言的Go调度器）进行调度和管理的，称为用户态线程。协程切换由编程语言的运行时环境完成，切换开销较小。
 
 
+并发性能：
 
-  
-    <article id="post-并发" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/07/26/%E5%B9%B6%E5%8F%91/" class="article-date">
-  <time class="dt-published" datetime="2023-07-26T05:03:12.000Z" itemprop="datePublished">2023-07-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="并发"><a href="#并发" class="headerlink" title="并发"></a>并发</h1><h1 id="Gorountines"><a href="#Gorountines" class="headerlink" title="Gorountines"></a>Gorountines</h1><p>在Go语言中，每一个并发的执行单元叫作一个goroutine。设想这里的一个程序有两个函数，一个函数做计算，另一个输出结果，假设两个函数没有相互之间的调用关系。一个线性的程序会先调用其中的一个函数，然后再调用另一个。如果程序中包含多个goroutine，对两个函数的调用则可能发生在同一时刻。</p>
-<p>‍</p>
-<p>‍</p>
-<h2 id="线程和协程"><a href="#线程和协程" class="headerlink" title="线程和协程"></a>线程和协程</h2><p>​<img src="/assets/Screenshot_20230726_160846-20230726160959-12jl74g.png" alt="Screenshot_20230726_160846">​</p>
-<p>​​<img src="/assets/Screenshot_20230726_161508-20230726161547-zpsp5qz.png" alt="Screenshot_20230726_161508">​​</p>
-<h4 id="协程和线程的区别"><a href="#协程和线程的区别" class="headerlink" title="协程和线程的区别"></a>协程和线程的区别</h4><p>协程（Coroutine）和线程（Thread）都是并发编程中用于实现并发执行的概念，但它们在实现方式和用途上有一些重要的区别。</p>
-<ol>
-<li><p>调度方式：</p>
-<ul>
-<li>线程是由操作系统内核进行调度和管理的，称为内核线程。线程切换由操作系统完成，切换开销较大。</li>
-<li>协程是由编程语言的运行时环境（如Go语言的Go调度器）进行调度和管理的，称为用户态线程。协程切换由编程语言的运行时环境完成，切换开销较小。</li>
-</ul>
-</li>
-<li><p>并发性能：</p>
-<ul>
-<li>由于线程切换是由操作系统完成的，线程的创建、销毁和切换开销较大，因此创建大量线程可能导致系统负担过重。</li>
-<li>协程切换由编程语言运行时环境负责，切换开销较小，可以轻松创建大量的协程，提高并发性能。</li>
-</ul>
-</li>
-<li><p>内存占用：</p>
-<ul>
-<li>线程在创建时需要分配一定的堆栈空间，同时需要维护内核数据结构，因此线程的内存占用较大。</li>
-<li>协程的内存占用较小，因为它们共享相同的堆栈，无需维护内核数据结构。</li>
-</ul>
-</li>
-<li><p>多核利用：</p>
-<ul>
-<li>线程可以在多核处理器上并行执行，利用多核优势。</li>
-<li>一般情况下，单个协程只能在一个线程中运行，无法直接利用多核处理器，但在某些语言中，可以通过多线程和多协程的结合来实现多核利用。</li>
-</ul>
-</li>
-<li><p>同步方式：</p>
-<ul>
-<li>线程之间的同步通常通过共享内存和锁等机制实现，容易出现死锁和竞态条件。</li>
-<li>协程之间的同步通常通过通道（Channel）等机制实现，由于通道本身就是并发安全的，因此更容易编写线程安全的代码。</li>
-</ul>
-</li>
-</ol>
-<p>‍</p>
-<h3 id="channel"><a href="#channel" class="headerlink" title="channel"></a>channel</h3><p> make(chan 元素类型,[缓冲大小])</p>
-<p>无缓冲通道   make(chan int)</p>
-<p>有缓冲通道   make(chan int ,2)​<img src="/assets/Screenshot_20230726_161848-20230726161941-nbbv080.png" alt="Screenshot_20230726_161848">​</p>
-<p>‍</p>
-<p>‍</p>
-<p>‍</p>
-<p>案例：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">func <span class="title">CalSquare</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    src := <span class="built_in">make</span>(chan <span class="type">int</span>)</span><br><span class="line">    dest := <span class="built_in">make</span>(chan <span class="type">int</span>, <span class="number">3</span>) <span class="comment">//有3个空间的缓冲通道</span></span><br><span class="line"></span><br><span class="line">    go <span class="built_in">func</span>() &#123;</span><br><span class="line">        defer <span class="built_in">close</span>(src)</span><br><span class="line">        <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</span><br><span class="line">            src &lt;- i</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;()</span><br><span class="line"></span><br><span class="line">    <span class="function">go <span class="title">func</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="function">defer <span class="title">close</span><span class="params">(dest)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">for</span> i :=</span> range src &#123;</span><br><span class="line">            dest &lt;- i * i</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i := range dest &#123;</span><br><span class="line">        <span class="built_in">println</span>(i)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>​<code>defer</code>​ 是 Go 语言中的一个关键字，用于延迟（defer）函数或方法的执行直到包含它的函数（或当前代码块）执行完毕。<code>defer</code>​ 语句允许您在函数退出之前执行一些清理或善后工作。</p>
-<p>常见的 <code>defer</code>​ 用途包括：</p>
-<ol>
-<li>关闭资源：例如文件、数据库连接或网络连接等，在函数结束前及时关闭它们。</li>
-<li>解锁资源：在函数结束时释放被锁定的资源，以防止死锁。</li>
-<li>记录日志：在函数退出前记录函数的状态、执行信息或错误日志。</li>
-<li>清理资源：在函数结束前释放动态分配的内存或资源。</li>
-</ol>
-<p>​<code>defer</code>​ 的使用可以增强代码的可读性和健壮性，同时确保在函数退出时进行必要的清理工作。</p>
-<p>上述代码开辟了<code>src</code>​和<code>dest</code>​两个channel，<code>src</code>​没有缓存，<code>dest</code>​有三个缓存空间，<code>go func() &#123;...&#125;()</code>​: 创建第一个匿名 goroutine，用于生成 0 到 9 的数字并将它们发送到 <code>src</code>​ 通道中。在这个例子中，由于 <code>src</code>​ 是无缓冲通道，这个 goroutine 会在数据发送后阻塞直到第二个 goroutine 开始接收数据。</p>
-<p>在这个例子中，由于 <code>dest</code>​ 是带有3个空间的缓冲通道，它可以缓冲三个结果。所以，第一个 goroutine 在发送完 0 到 2 的平方结果后不会被阻塞。然后，第二个 goroutine 在接收这三个结果之前不会阻塞，因为它可以从缓冲通道中接收数据。当第二个 goroutine 开始发送数据时，它会阻塞，直到主 goroutine 继续接收数据。</p>
-<h3 id="WaitGroup"><a href="#WaitGroup" class="headerlink" title="WaitGroup"></a>WaitGroup</h3><p>在Go语言中，<code>sync.WaitGroup</code>​ 是一个用于等待一组 goroutine 完成执行的工具。它通常用于在主goroutine等待所有其他goroutine执行完毕后再继续执行。<code>WaitGroup</code>​ 通过计数器来实现，通过 <code>Add</code>​ 方法增加计数器值，通过 <code>Done</code>​ 方法减少计数器值，通过 <code>Wait</code>​ 方法阻塞等待计数器值归零。</p>
-<p>下面是一个简单的示例来说明如何使用 <code>WaitGroup</code>​：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">package main</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">import</span> <span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="string">&quot;fmt&quot;</span></span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="string">&quot;sync&quot;</span></span></span></span><br><span class="line"><span class="params"><span class="function">)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">func <span class="title">worker</span><span class="params">(id <span class="type">int</span>, wg *sync.WaitGroup)</span> </span>&#123;</span><br><span class="line">    defer wg.<span class="built_in">Done</span>() <span class="comment">// 在函数结束时减少计数器值</span></span><br><span class="line">    fmt.<span class="built_in">Printf</span>(<span class="string">&quot;Worker %d starting\n&quot;</span>, id)</span><br><span class="line">    <span class="comment">// 模拟一些工作</span></span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">5</span>; i++ &#123;</span><br><span class="line">        fmt.<span class="built_in">Printf</span>(<span class="string">&quot;Worker %d: %d\n&quot;</span>, id, i)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.<span class="built_in">Printf</span>(<span class="string">&quot;Worker %d done\n&quot;</span>, id)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">func <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    var wg sync.WaitGroup</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">1</span>; i &lt;= <span class="number">3</span>; i++ &#123;</span><br><span class="line">        wg.<span class="built_in">Add</span>(<span class="number">1</span>) <span class="comment">// 增加计数器值</span></span><br><span class="line">        <span class="function">go <span class="title">worker</span><span class="params">(i, &amp;wg)</span></span></span><br><span class="line"><span class="function">    &#125;</span></span><br><span class="line"><span class="function">    wg.<span class="title">Wait</span><span class="params">()</span> <span class="comment">// 阻塞等待计数器值归零</span></span></span><br><span class="line"><span class="function">    fmt.<span class="title">Println</span><span class="params">(<span class="string">&quot;All workers done&quot;</span>)</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br><span class="line"><span class="function"></span></span><br></pre></td></tr></table></figure>
-
-<p>在上面的示例中，我们创建了3个goroutine（worker），每个worker模拟一些工作。在每个worker函数中，我们通过 <code>defer</code>​ 关键字在函数退出时调用 <code>Done()</code>​ 方法，以减少 <code>WaitGroup</code>​ 的计数器值。然后，我们在主goroutine中调用 <code>wg.Wait()</code>​ 方法，它会一直阻塞直到 <code>WaitGroup</code>​ 的计数器值归零，即所有的worker都执行完毕。</p>
-<p>请注意，<code>WaitGroup</code>​ 是通过指针传递给worker函数的，因为需要修改 <code>WaitGroup</code>​ 中的计数器值，保证在每个worker完成时正确减少计数器。</p>
-<p>使用 <code>WaitGroup</code>​ 可以非常方便地实现等待一组goroutine执行完毕的功能，特别是在处理并发任务时。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/07/26/%E5%B9%B6%E5%8F%91/" data-id="clkjtbfgz0001n8cf97zm7ywy" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
+由于线程切换是由操作系统完成的，线程的创建、销毁和切换开销较大，因此创建大量线程可能导致系统负担过重。
+协程切换由编程语言运行时环境负责，切换开销较小，可以轻松创建大量的协程，提高并发性能。
 
 
+内存占用：
 
-  
-
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">July 2023</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2023/07/26/hello-world/">Hello World</a>
-          </li>
-        
-          <li>
-            <a href="/2023/07/26/%E5%B9%B6%E5%8F%91/">(no title)</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      
-      &copy; 2023 John Doe<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
-
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-
-<script src="/js/jquery-3.6.4.min.js"></script>
-
-
-
-  
-<script src="/fancybox/jquery.fancybox.min.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-
-
-
-  </div>
-</body>
-</html>
+线程在创建时需要分配一定 ...</div></div></div><nav id="pagination"><div class="pagination"><span class="page-number current">1</span></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">John Doe</div><div class="author-info__description">一个杰米的CS学习小站</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">2</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/07/26/hello-world/" title="Hello World">Hello World</a><time datetime="2023-07-26T14:05:38.805Z" title="Created 2023-07-26 22:05:38">2023-07-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/07/26/%E5%B9%B6%E5%8F%91/" title="No title">No title</a><time datetime="2023-07-26T05:03:12.000Z" title="Created 2023-07-26 13:03:12">2023-07-26</time></div></div></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>Archives</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/07/"><span class="card-archive-list-date">July 2023</span><span class="card-archive-list-count">2</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article :</div><div class="item-count">2</div></div><div class="webinfo-item"><div class="item-name">UV :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">PV :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Last Push :</div><div class="item-count" id="last-push-date" data-lastPushDate="2023-07-26T14:30:18.442Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By John Doe</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
