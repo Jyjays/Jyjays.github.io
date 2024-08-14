@@ -1,0 +1,270 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Hexo | Hexo</title><meta name="author" content="John Doe"><meta name="copyright" content="John Doe"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="buffer poolIntro数据库管理系统（DBMS）的主要作用是管理内存，并将数据在硬盘和内存之间来回移动。一般情况下，数据并不能直接在磁盘上进行操作，而是需要通过内存来处理，读取数据时需要先将磁盘上的数据移动到内存上。这好像是操作系统应该做的事情，但是：  OS is not your friend  我们不能相信操作系统来替我们移动数据，将数据库的数据和其他程序的数据都交给操作系统处理是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2024/08/14/buffer%20pool/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="buffer poolIntro数据库管理系统（DBMS）的主要作用是管理内存，并将数据在硬盘和内存之间来回移动。一般情况下，数据并不能直接在磁盘上进行操作，而是需要通过内存来处理，读取数据时需要先将磁盘上的数据移动到内存上。这好像是操作系统应该做的事情，但是：  OS is not your friend  我们不能相信操作系统来替我们移动数据，将数据库的数据和其他程序的数据都交给操作系统处理是">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-08-14T13:35:44.355Z">
+<meta property="article:modified_time" content="2024-08-14T05:32:56.000Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2024/08/14/buffer%20pool/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Hexo',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-08-14 13:32:56'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Hexo</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">No title</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-08-14T13:35:44.355Z" title="Created 2024-08-14 21:35:44">2024-08-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-08-14T05:32:56.000Z" title="Updated 2024-08-14 13:32:56">2024-08-14</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="buffer-pool"><a href="#buffer-pool" class="headerlink" title="buffer pool"></a>buffer pool</h1><h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p>数据库管理系统（DBMS）的主要作用是管理内存，并将数据在硬盘和内存之间来回移动。一般情况下，数据并不能直接在磁盘上进行操作，而是需要通过内存来处理，读取数据时需要先将磁盘上的数据移动到内存上。这好像是操作系统应该做的事情，但是：</p>
+<blockquote>
+<p><em><strong>OS is not your friend</strong></em></p>
+</blockquote>
+<p>我们不能相信操作系统来替我们移动数据，将数据库的数据和其他程序的数据都交给操作系统处理是非常危险的，因为你不知道什么时候操作系统会将数据库正在用的数据“<em>干掉</em>”。</p>
+<p>我们应该实现自己的buffer pool（也可以叫buffer cache）。为了能够让数据库专属的缓冲区比操作系统的更加高效，我们应该从空间和时间两个层面来考虑如何实现，并优化。</p>
+<blockquote>
+<p>Spatial Control refers to where pages are physically written on disk. The goal of spatial control is to keep pages that are used together often as physically close together as possible on disk.</p>
+<p>Temporal Control refers to when to read pages into memory and when to write them to disk. Temporal control aims to minimize the number of stalls from having to read data from disk.</p>
+<p>空间控制指的是页面在磁盘上的物理写入位置。空间控制的目标是尽可能将经常一起使用的页面在磁盘上物理地靠近。</p>
+<p>时间控制指的是何时将页面读入内存以及何时将它们写入磁盘。时间控制的目标是最小化因必须从磁盘读取数据而导致的停顿次数。</p>
+</blockquote>
+<h2 id="The-primary-issue"><a href="#The-primary-issue" class="headerlink" title="The primary issue"></a>The primary issue</h2><p>​<img src="https://s2.loli.net/2024/08/13/vnTbwaG3S5UMhQi.png" alt="image">​</p>
+<p>当程序请求新的页面时，如果内存中没有足够的空间来容纳，buffer pool就要进行取舍，将在内存中“用处不大”的页面<code>evict</code>​逐出去。系统的其他部分无须知道，也不关心哪些东西在内存里，哪些东西不在，它只会等它需要拿到的东西，然后返回一个指针给到程序。</p>
+<h1 id="Locks-vs-Latches"><a href="#Locks-vs-Latches" class="headerlink" title="Locks vs. Latches"></a>Locks vs. Latches</h1><p>在讨论DBMS如何保护其内部元素时，我们需要区分锁和闩锁。</p>
+<p>​<code>lock</code>​ 锁：<strong>锁是一个更高层次的逻辑原语</strong>，用于保护数据库的内容（例如，元组、表、数据库）免受其他事务的影响。事务在其整个持续期间将持有锁。数据库系统可以将正在运行的查询中持有的锁暴露给用户。锁需要能够回滚更改。</p>
+<p>​<code>latch</code>​ 闩锁：闩锁是DBMS用于其<strong>内部数据结构的关键部分的低级保护原语</strong>（例如，哈希表、内存区域）。闩锁只在操作执行期间保持。闩锁不需要能够回滚更改。</p>
+<h1 id="Buffer-Pool"><a href="#Buffer-Pool" class="headerlink" title="Buffer Pool"></a>Buffer Pool</h1><p>Buffer Pool本质上是数据库内分配的一个大型内存区域，用于存放从磁盘获取的页面，组织上表示为一个固定大小的数组，每个数组条目称为<code>frame</code>​，当请求一个页面时，数据库系统会先对buffer pool进行搜索，当页面不存在时就会复制一份到内存中，如果被缓冲的页面是一个<code>脏页面</code>​ <em>（指已经被修改但尚未写回磁盘的数据页），那么它不会被立即写回。</em></p>
+<p>​<img src="/assets/image-20240814163647-x9cv2ef.png" alt="image">​</p>
+<h2 id="Buffer-Pool-Meta-data"><a href="#Buffer-Pool-Meta-data" class="headerlink" title="Buffer Pool Meta-data"></a>Buffer Pool Meta-data</h2><p>页面表是一个内存中的哈希表，用于跟踪当前在内存中的页面。它将页面ID映射到缓冲池中的帧位置。由于缓冲池中页面的顺序不一定反映磁盘上的顺序，这一层额外的间接层允许在缓冲池中识别页面位置。</p>
+<p>为了让buffer pool有更高效的组织且能够正确地被使用，页面表需要维护一些元数据，包括：</p>
+<ul>
+<li><p><strong>Dirty Flag（脏页标记）</strong> ：</p>
+<ul>
+<li><strong>含义</strong>：Dirty Flag 是一个布尔值标记，用于指示一个页面是否在 Buffer Pool 中被修改过。如果页面在 Buffer Pool 中被修改过但还没有被写回磁盘，就会被标记为“脏页”（dirty page）。</li>
+<li><strong>作用</strong>：它帮助数据库管理系统（DBMS）确定哪些页面需要在适当的时候（例如在检查点或刷新操作中）写回到磁盘，以确保数据的持久性和一致性。</li>
+</ul>
+</li>
+<li><p><strong>Pin&#x2F;Reference Counter（引用计数器）</strong> ：</p>
+<ul>
+<li><strong>含义</strong>：这是一个计数器，用于记录当前有多少个数据库事务或进程正在使用该页面。每当一个事务访问该页面时，计数器就会增加；当事务完成访问时，计数器会减少。</li>
+<li><strong>作用</strong>：它确保页面在 Buffer Pool 中不会被其他事务或后台进程驱逐（evict）。只有当计数器为零时，页面才有可能被替换出 Buffer Pool。</li>
+</ul>
+</li>
+<li><p><strong>Access Tracking Information（访问跟踪信息）</strong> ：</p>
+<ul>
+<li><strong>含义</strong>：这些信息用于记录页面在 Buffer Pool 中的访问模式和频率，通常用于实现缓存替换策略。</li>
+<li><strong>作用</strong>：它帮助数据库系统决定哪些页面应该保留在内存中，哪些页面可以被驱逐，以优化 Buffer Pool 的利用效率。这些信息可能包括最近一次访问时间、访问频率等。</li>
+</ul>
+</li>
+</ul>
+<p>​<img src="/assets/image-20240814164340-gz4tmsv.png" alt="image">​</p>
+<p>在向page table添加信息时，还要注意添加latch锁，防止多个线程竞争导致的资源冲突以及元数据的错误。</p>
+<h2 id="Memory-Allocation-Policies"><a href="#Memory-Allocation-Policies" class="headerlink" title="Memory Allocation Policies"></a>Memory Allocation Policies</h2><ul>
+<li><p>全局策略</p>
+<ul>
+<li>DBMS应该为正在执行的所有工作负载做出的决策。它考虑所有活动事务，以找到分配内存的最优决策。</li>
+</ul>
+</li>
+<li><p>本地策略</p>
+<ul>
+<li>做出的决策将使单个查询或事务运行得更快，即使这对整个工作负载并不好。本地策略将帧分配给特定事务，而不考虑并发事务的行为。</li>
+</ul>
+</li>
+</ul>
+<p>大多数系统使用二者的组合。</p>
+<h1 id="Buffer-Pool-Oprimizations"><a href="#Buffer-Pool-Oprimizations" class="headerlink" title="Buffer Pool Oprimizations"></a>Buffer Pool Oprimizations</h1><h2 id="Mutiple-Buffer-Pools"><a href="#Mutiple-Buffer-Pools" class="headerlink" title="Mutiple Buffer Pools"></a>Mutiple Buffer Pools</h2><p>DBMS可以根据不同的目的来维护多个buffer pool，例如为每个数据库建立buffer pool，这样可以更好地体现本地策略的优点，减少线程的竞争，从而使用的latch就减少了，提高了整个系统的上限。</p>
+<p>实现方法有两种：</p>
+<ul>
+<li><p>在记录 ID 中嵌入对象标识符然后维护从对象到特定缓冲池的映射。</p>
+<p>​<img src="/assets/image-20240814172947-y21y6i8.png" alt="image">​</p>
+</li>
+<li><p>对页面 ID 进行哈希处理以选择要访问的缓冲池。</p>
+<p>​<img src="/assets/image-20240814173009-7dabwkw.png" alt="image">​</p>
+</li>
+</ul>
+<h2 id="Pre-fetching"><a href="#Pre-fetching" class="headerlink" title="Pre-fetching"></a>Pre-fetching</h2><p>由于query的操作目的通常是可以预见的，在DBMS按顺序读取大量页面时，可以提前将还未被读取的页面提前放入到buffer pool中。</p>
+<p><em>注意：OS的mmap也可以做到pre-fetching，但是它并不知道数据库的查询逻辑，只会盲目的将物理上的连续页面预取出来。</em></p>
+<p>​<img src="/assets/image-20240814173653-jw0pzi2.png" alt="image">​</p>
+<h2 id="Scan-Sharing-Synchronized-Scans"><a href="#Scan-Sharing-Synchronized-Scans" class="headerlink" title="Scan Sharing(Synchronized Scans)"></a>Scan Sharing(Synchronized Scans)</h2><p>扫描共享（同步扫描），是指多个查询可以共享查询游标，如果一个查询开始扫描，并且如果已经有一个正在进行，那么DBMS将附加第二个查询的游标到现有游标上，这样第二个查询就可以直接复用第一个查询的查询结果而不用再次扫描（我愿称之为搭便车），第一个查询结束后，第二个查询还需要根据游标开始和结束的位置去读取遗漏的数据，这个优化方法有多种可能的实现方法，Andy教授还提到了可以让一个游标一直扫描整个数据库，当有新的查询时，它会等待游标扫描到合适的位置，然后开始接受它的扫描结果（类似于坐公交车？）。</p>
+<h2 id="Buffer-Pool-Bypass"><a href="#Buffer-Pool-Bypass" class="headerlink" title="Buffer Pool Bypass"></a>Buffer Pool Bypass</h2><p>给正在运行的线程开通一小块内存，不走buffer pool而是走这个后门。这种方法适用于大批量顺序数据读写或者是临时数据，因为这些页面往往只会用到一次。</p>
+<h1 id="Buffer-Replacement-Policies"><a href="#Buffer-Replacement-Policies" class="headerlink" title="Buffer Replacement Policies"></a>Buffer Replacement Policies</h1><p>当DBMS需要释放一个帧以腾出空间给一个新页面时，它必须决定从缓冲池中逐出哪一页。 替换策略是DBMS实现的一个算法，用于决定当需要空间时从缓冲池中逐出哪些页面。 替换策略的实现目标是提高正确性、准确性、速度和元数据开销。</p>
+<h2 id="Least-Recently-Used-LRU"><a href="#Least-Recently-Used-LRU" class="headerlink" title="Least Recently Used(LRU)"></a>Least Recently Used(LRU)</h2><p>最近最少使用替换策略维护每个页面最后访问的时间戳。DBMS选择逐出具有最旧时间戳的页面。这个时间戳可以存储在一个单独的数据结构中，例如队列，以允许排序并提高通过减少逐出时的排序时间来提高效率。</p>
+<p>​<img src="/assets/image-20240814175557-uavm5gv.png" alt="image">​</p>
+<h2 id="CLOCK"><a href="#CLOCK" class="headerlink" title="CLOCK"></a>CLOCK</h2><p>时钟策略是一种不需要每个页面都有单独时间戳的LRU近似策略。在时钟策略中，每个页面都被赋予一个引用位。当页面被访问时，将其设置为1。 为了形象化这一点，将页面组织在一个圆形缓冲区中，有一个“时钟指针”。在扫描时检查页面的位是否设置为1。如果是，将其设置为零；如果没有，那么逐出它。通过这种方式，时钟指针在逐出之间记住位置。</p>
+<p>​<img src="https://s2.loli.net/2024/08/14/BAF7X1MVQajPmdp.png" alt="image">​</p>
+<h2 id="Alternatives"><a href="#Alternatives" class="headerlink" title="Alternatives"></a>Alternatives</h2><p>LRU + CLOCK 替换策略容易受到顺序洪泛的影响。</p>
+<blockquote>
+<p><strong>顺序洪泛（Sequential Flooding）</strong>  是一种与数据库或存储系统中的 I&#x2F;O 操作有关的现象，通常发生在大规模顺序访问操作中。这种现象描述的是当大量数据被顺序读取或写入时，导致缓存在内存中的数据被迅速替换或“淹没”的情况。</p>
+</blockquote>
+<p>更糟糕的情况是，如果有多个线程在同时请求同一部分数据，一个线程需要的页面可能很快会被另一个线程逐出buffer pool，引发混乱。</p>
+<p><strong>解决方案：</strong></p>
+<ol>
+<li>LRU-K</li>
+<li>Localization（本地化）</li>
+<li>Priority Hints</li>
+</ol>
+<p>相比于传统的 <strong>LRU (Least Recently Used)</strong>  算法，<strong>LRU-K</strong> 不仅考虑最近一次的访问，还考虑了最近 <strong>K</strong> 次的访问情况，从而更准确地反映数据的访问模式。</p>
+<h3 id="LRU-K-算法的基本思路"><a href="#LRU-K-算法的基本思路" class="headerlink" title="LRU-K 算法的基本思路"></a>LRU-K 算法的基本思路</h3><ol>
+<li><p><strong>记录最近 K 次访问</strong>：</p>
+<ul>
+<li>对于缓存中的每个数据页，LRU-K 算法会跟踪它的最近 K 次访问时间。当 K=1 时，LRU-K 退化为普通的 LRU 算法。</li>
+</ul>
+</li>
+<li><p><strong>优先驱逐冷数据</strong>：</p>
+<ul>
+<li>当缓存空间不足时，LRU-K 会优先驱逐那些最近 K 次访问时间间隔较长的数据页，因为这些数据在未来被再次访问的可能性较低。</li>
+</ul>
+</li>
+<li><p><strong>区分冷热数据</strong>：</p>
+<ul>
+<li>LRU-K 能够区分出那些被偶尔访问但不常用的数据（称为冷数据）和那些经常被访问的数据（称为热数据）。通过分析 K 次访问之间的时间间隔，LRU-K 能够更准确地判断哪些数据应当保留在缓存中。</li>
+</ul>
+</li>
+</ol>
+<p>当一个数据页是第一次被访问时，由于没有足够的历史记录（即少于 K 次），它会被放在一个特殊的候选列表中。只有当它被访问了至少 K 次后，才会进入主缓存并按照正常的 LRU-K 规则进行管理。</p>
+<h3 id="Localization"><a href="#Localization" class="headerlink" title="Localization"></a>Localization</h3><p>即之前提到的buffer pool优化方法：多缓冲池，数据旁路等等。</p>
+<h3 id="Priority-Hints"><a href="#Priority-Hints" class="headerlink" title="Priority Hints"></a>Priority Hints</h3><p>为数据建立索引，根据索引能够知道查询顺序，哪些页面需要被访问。</p>
+<h2 id="Dirty-Pages"><a href="#Dirty-Pages" class="headerlink" title="Dirty Pages"></a>Dirty Pages</h2><p>根据<code>dirty flag</code>​，可以判断一个页面是否是dirty page。移除一个dirty pages的成本比较高，因为它需要将修改写入磁盘，相反，如果不dirty，就可以直接<code>drop</code>​。</p>
+<p>避免不必要地写出页面问题的一种方法是<code>Background Writing</code>​ 。通过一个专门的线程后台写入，DBMS可以定期遍历页面表并将脏页面写入磁盘。当脏页面安全地写入后，DBMS可以逐出页面或仅取消脏标志。</p>
+<p>但是这个操作要小心，因为在该 dirty page 对应的修改操作写入日志之前，我们不希望将这些 dirty page 写到磁盘</p>
+<h1 id="Other-Memory-Pools"><a href="#Other-Memory-Pools" class="headerlink" title="Other Memory Pools"></a>Other Memory Pools</h1><p>DBMS 需要内存来存储元组和索引以外的内容。这些其他内存池可能并不总是由磁盘支持，具体取决于实现。</p>
+<ul>
+<li>排序 + 连接缓冲区</li>
+<li>查询缓存</li>
+<li>维护缓冲区</li>
+<li>日志缓冲区</li>
+<li>字典缓存</li>
+</ul>
+<h1 id="Os-Page-Cache、"><a href="#Os-Page-Cache、" class="headerlink" title="Os Page Cache、"></a>Os Page Cache、</h1><p>大多数磁盘操作都通过操作系统API进行。除非明确告知，否则操作系统会维护自己的文件系统缓存。 大多数DBMS使用直接I&#x2F;O绕过操作系统的缓存，以避免页面的冗余副本并管理不同的逐出策略。 Postgres是使用操作系统页面缓存的数据库系统的一个例子。</p>
+<h1 id="Disk-I-O-Scheduling"><a href="#Disk-I-O-Scheduling" class="headerlink" title="Disk I&#x2F;O Scheduling"></a>Disk I&#x2F;O Scheduling</h1><p>DBMS 维护内部队列以跟踪整个系统的页面读&#x2F;写请求。任务的优先级基于以下几个因素确定：</p>
+<ul>
+<li>顺序 I&#x2F;O 与随机 I&#x2F;O</li>
+<li>关键路径任务与后台任务</li>
+<li>表与索引与日志与临时数据</li>
+<li>事务信息</li>
+<li>基于用户的 SLA</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="http://example.com">John Doe</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://example.com/2024/08/14/buffer%20pool/">http://example.com/2024/08/14/buffer%20pool/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/08/14/buffer%20pool/buffer%20pool/"><img class="next-cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info"></div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">John Doe</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#buffer-pool"><span class="toc-number">1.</span> <span class="toc-text">buffer pool</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Intro"><span class="toc-number">2.</span> <span class="toc-text">Intro</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#The-primary-issue"><span class="toc-number">2.1.</span> <span class="toc-text">The primary issue</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Locks-vs-Latches"><span class="toc-number">3.</span> <span class="toc-text">Locks vs. Latches</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Buffer-Pool"><span class="toc-number">4.</span> <span class="toc-text">Buffer Pool</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Buffer-Pool-Meta-data"><span class="toc-number">4.1.</span> <span class="toc-text">Buffer Pool Meta-data</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Memory-Allocation-Policies"><span class="toc-number">4.2.</span> <span class="toc-text">Memory Allocation Policies</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Buffer-Pool-Oprimizations"><span class="toc-number">5.</span> <span class="toc-text">Buffer Pool Oprimizations</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Mutiple-Buffer-Pools"><span class="toc-number">5.1.</span> <span class="toc-text">Mutiple Buffer Pools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pre-fetching"><span class="toc-number">5.2.</span> <span class="toc-text">Pre-fetching</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Scan-Sharing-Synchronized-Scans"><span class="toc-number">5.3.</span> <span class="toc-text">Scan Sharing(Synchronized Scans)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Buffer-Pool-Bypass"><span class="toc-number">5.4.</span> <span class="toc-text">Buffer Pool Bypass</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Buffer-Replacement-Policies"><span class="toc-number">6.</span> <span class="toc-text">Buffer Replacement Policies</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Least-Recently-Used-LRU"><span class="toc-number">6.1.</span> <span class="toc-text">Least Recently Used(LRU)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CLOCK"><span class="toc-number">6.2.</span> <span class="toc-text">CLOCK</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Alternatives"><span class="toc-number">6.3.</span> <span class="toc-text">Alternatives</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LRU-K-%E7%AE%97%E6%B3%95%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%80%9D%E8%B7%AF"><span class="toc-number">6.3.1.</span> <span class="toc-text">LRU-K 算法的基本思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Localization"><span class="toc-number">6.3.2.</span> <span class="toc-text">Localization</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Priority-Hints"><span class="toc-number">6.3.3.</span> <span class="toc-text">Priority Hints</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Dirty-Pages"><span class="toc-number">6.4.</span> <span class="toc-text">Dirty Pages</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Other-Memory-Pools"><span class="toc-number">7.</span> <span class="toc-text">Other Memory Pools</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Os-Page-Cache%E3%80%81"><span class="toc-number">8.</span> <span class="toc-text">Os Page Cache、</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Disk-I-O-Scheduling"><span class="toc-number">9.</span> <span class="toc-text">Disk I&#x2F;O Scheduling</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/08/14/buffer%20pool/" title="No title"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="No title"/></a><div class="content"><a class="title" href="/2024/08/14/buffer%20pool/" title="No title">No title</a><time datetime="2024-08-14T13:35:44.355Z" title="Created 2024-08-14 21:35:44">2024-08-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/14/buffer%20pool/buffer%20pool/" title="No title"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="No title"/></a><div class="content"><a class="title" href="/2024/08/14/buffer%20pool/buffer%20pool/" title="No title">No title</a><time datetime="2024-08-14T05:32:56.000Z" title="Created 2024-08-14 13:32:56">2024-08-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/12/hello-world/" title="Hello World"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hello World"/></a><div class="content"><a class="title" href="/2024/08/12/hello-world/" title="Hello World">Hello World</a><time datetime="2024-08-12T13:26:54.115Z" title="Created 2024-08-12 21:26:54">2024-08-12</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By John Doe</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
