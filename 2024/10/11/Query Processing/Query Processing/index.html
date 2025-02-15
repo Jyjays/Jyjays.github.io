@@ -1,0 +1,177 @@
+<!DOCTYPE html><html lang="zh_TW" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Query Processing | Jyjays's Blog</title><meta name="author" content="Jyjays"><meta name="copyright" content="Jyjays"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Query Plan在处理SQL​语句时，DBMS​会先将SQL转换成query plan​，并且以一个树的形式呈现，如图所示。 ​​ 数据流从树的叶子向根部聚拢，而根节点的输出结果就是整个query​的结果。 Processing Models​Processing Models​用于进一步处理query plan​。它定义了在query plan​中操作的处理方向以及在处理过程中数据的传输种类">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Query Processing">
+<meta property="og:url" content="https://jyjays.github.io/2024/10/11/Query%20Processing/Query%20Processing/index.html">
+<meta property="og:site_name" content="Jyjays&#39;s Blog">
+<meta property="og:description" content="Query Plan在处理SQL​语句时，DBMS​会先将SQL转换成query plan​，并且以一个树的形式呈现，如图所示。 ​​ 数据流从树的叶子向根部聚拢，而根节点的输出结果就是整个query​的结果。 Processing Models​Processing Models​用于进一步处理query plan​。它定义了在query plan​中操作的处理方向以及在处理过程中数据的传输种类">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg">
+<meta property="article:published_time" content="2024-10-11T00:00:00.000Z">
+<meta property="article:modified_time" content="2024-10-10T08:08:37.264Z">
+<meta property="article:author" content="Jyjays">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://jyjays.github.io/2024/10/11/Query%20Processing/Query%20Processing/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Query Processing',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-10-10 00:08:37'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Jyjays's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Query Processing</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-10-11T00:00:00.000Z" title="Created 2024-10-10 16:00:00">2024-10-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-10-10T08:08:37.264Z" title="Updated 2024-10-10 00:08:37">2024-10-10</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Query Processing"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Query-Plan"><a href="#Query-Plan" class="headerlink" title="Query Plan"></a>Query Plan</h1><p>在处理<code>SQL</code>​语句时，<code>DBMS</code>​会先将SQL转换成<code>query plan</code>​，并且以一个树的形式呈现，如图所示。</p>
+<p>​<img src="https://s2.loli.net/2024/10/10/DQ9NASCTR84GKh2.png" alt="image">​</p>
+<p>数据流从树的叶子向根部聚拢，而根节点的输出结果就是整个<code>query</code>​的结果。</p>
+<h1 id="Processing-Models"><a href="#Processing-Models" class="headerlink" title="Processing Models"></a>Processing Models</h1><p>​<code>Processing Models</code>​用于进一步处理<code>query plan</code>​。它定义了在<code>query plan</code>​中操作的处理方向以及在处理过程中数据的传输种类。不同的<code>Processing Models</code>​有不同的取舍。</p>
+<p>将要介绍的<code>models</code>​都可以按自顶向下或从底向上的方向处理操作符，自顶向下的实现方式更常见，而从底向上实现也可以对整个流程的缓存实现更紧密的控制管理。</p>
+<h2 id="Iterator-Model"><a href="#Iterator-Model" class="headerlink" title="Iterator Model"></a>Iterator Model</h2><blockquote>
+<p>迭代器模型，也称作火山模型，是目前最常见的处理模型，广泛用于几乎每个基于行结构的DBMS</p>
+</blockquote>
+<p>该模型为数据库中的每种操作实现一个Next函数，query plan中的每个节点都执行Next函数直到叶子节点，然后叶子节点开始向其父节点发送元组数据并进行处理。然后在检索下一个元组前尽可能按计划处理每个元组，这让我们能够充分利用内存中的每个元组，对于基于磁盘实现的系统很高效。</p>
+<p>每个操作的独立性和可组合型都很强，因为每个操作都是独立于其位于query plan树中的父操作或者子操作实现（Next函数）：</p>
+<ul>
+<li>每次调用Next函数都只会返回一个元组或者空集</li>
+<li>处理操作过程是一个循环，不断调用子节点中的Next函数并检索它们返回的元组</li>
+</ul>
+<p>​<img src="https://s2.loli.net/2024/10/10/LMa98prwhSKHYGB.png" alt="image">​</p>
+<p>这个模型也支持流水线工作，在等待下一个元组到来前，DBMS可以尽可能处理当前的元组，当然存在一些操作可能会阻塞整个流程，比如join、order等需要所有其子节点元组数据的操作。</p>
+<h2 id="Materialization-Model"><a href="#Materialization-Model" class="headerlink" title="Materialization Model"></a>Materialization Model</h2><blockquote>
+<p>该模型为火山模型的一种特例，它要求一次性处理所有输入并一次性返回所有输出。</p>
+</blockquote>
+<p>与使用Next函数返回一个元组不同，该模型每次操作都会处理并返回所有到达的数据。为了避免一次性扫描过多元组，DBMS会将元组数量需求发送给子操作。</p>
+<p>每个query plan中的操作实现一个Output函数：</p>
+<ul>
+<li>一次性处理所有来自子节点的数据</li>
+<li>返回值是所有元组数据处理后的结果集合</li>
+</ul>
+<p>​<img src="https://s2.loli.net/2024/10/10/PckuB83ix7vSMnj.png" alt="image">​</p>
+<p>这种方式更适合处理少量数据OLTP工作流，因为每次query操作都只需要获取少量的数据，所以只需要很少的函数调用来进行数据检索。但该模型不适用于具有大量中间结果的 OLAP 查询，因为 DBMS 可能必须在操作符之间将这些结果溢出到磁盘</p>
+<h2 id="Vectorization-Model"><a href="#Vectorization-Model" class="headerlink" title="Vectorization Model"></a>Vectorization Model</h2><p>与火山模型类似，该模型也实现了一个Next函数，但在返回数据时返回的是一组数据而不是单个元组，在每个操作的循环体内实现的对一组数据的处理而不是一次处理单个数据。返回数据量的大小基于硬件和操作属性可变。</p>
+<h1 id="Access-Methods"><a href="#Access-Methods" class="headerlink" title="Access Methods"></a>Access Methods</h1><blockquote>
+<p>这部分介绍获取数据的方法，一般来说，有两种访问模型的方法：数据要么从表中读取，要么通过顺序扫描从索引中读取。</p>
+</blockquote>
+<h2 id="Sequential-Scan"><a href="#Sequential-Scan" class="headerlink" title="Sequential Scan"></a>Sequential Scan</h2><h2 id="Index-Scan"><a href="#Index-Scan" class="headerlink" title="Index Scan"></a>Index Scan</h2><h1 id="Modification-Queries"><a href="#Modification-Queries" class="headerlink" title="Modification Queries"></a>Modification Queries</h1><p>修改数据库的操作要负责检查数据约束并更新索引。对于UPDATE&#x2F;DELETE等操作，子操作符需要传递RID并追踪先前的元组。</p>
+<h1 id="Expression-Evaluation"><a href="#Expression-Evaluation" class="headerlink" title="Expression Evaluation"></a>Expression Evaluation</h1><h1 id="Scheduler"><a href="#Scheduler" class="headerlink" title="Scheduler"></a>Scheduler</h1></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://jyjays.github.io">Jyjays</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://jyjays.github.io/2024/10/11/Query%20Processing/Query%20Processing/">https://jyjays.github.io/2024/10/11/Query%20Processing/Query%20Processing/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Database/">Database</a></div><div class="post_share"><div class="social-share" data-image="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2025/02/14/MIT%206.5840/%E5%89%8D%E8%A8%80/"><img class="prev-cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">前言</div></div></a></div><div class="next-post pull-right"><a href="/2024/09/05/Hash%20Tables/Hash%20Tables/"><img class="next-cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Hash Tables</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2024/09/04/Buffer%20Pool/buffer%20pool/" title="Buffer Pool"><img class="cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-03</div><div class="title">Buffer Pool</div></div></a></div><div><a href="/2024/09/05/Hash%20Tables/Hash%20Tables/" title="Hash Tables"><img class="cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-04</div><div class="title">Hash Tables</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Jyjays</div><div class="author-info__description">A CS learner who is interested in DataBase System and Music.</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Query-Plan"><span class="toc-number">1.</span> <span class="toc-text">Query Plan</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Processing-Models"><span class="toc-number">2.</span> <span class="toc-text">Processing Models</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Iterator-Model"><span class="toc-number">2.1.</span> <span class="toc-text">Iterator Model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Materialization-Model"><span class="toc-number">2.2.</span> <span class="toc-text">Materialization Model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Vectorization-Model"><span class="toc-number">2.3.</span> <span class="toc-text">Vectorization Model</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Access-Methods"><span class="toc-number">3.</span> <span class="toc-text">Access Methods</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Sequential-Scan"><span class="toc-number">3.1.</span> <span class="toc-text">Sequential Scan</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Index-Scan"><span class="toc-number">3.2.</span> <span class="toc-text">Index Scan</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Modification-Queries"><span class="toc-number">4.</span> <span class="toc-text">Modification Queries</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Expression-Evaluation"><span class="toc-number">5.</span> <span class="toc-text">Expression Evaluation</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Scheduler"><span class="toc-number">6.</span> <span class="toc-text">Scheduler</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/MapReduce/" title="MapReduce"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MapReduce"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/MapReduce/" title="MapReduce">MapReduce</a><time datetime="2025-02-15T08:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/Raft/" title="Raft"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Raft"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/Raft/" title="Raft">Raft</a><time datetime="2025-02-15T08:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/KVRaft%20server/" title="KVRaft server"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="KVRaft server"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/KVRaft%20server/" title="KVRaft server">KVRaft server</a><time datetime="2025-02-15T08:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/ShardKV/" title="ShardKV"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ShardKV"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/ShardKV/" title="ShardKV">ShardKV</a><time datetime="2025-02-15T08:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/14/MIT%206.5840/%E5%89%8D%E8%A8%80/" title="前言"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="前言"/></a><div class="content"><a class="title" href="/2025/02/14/MIT%206.5840/%E5%89%8D%E8%A8%80/" title="前言">前言</a><time datetime="2025-02-14T08:00:00.000Z" title="Created 2025-02-14 00:00:00">2025-02-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Jyjays</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
