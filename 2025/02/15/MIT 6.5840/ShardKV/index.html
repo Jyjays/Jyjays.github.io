@@ -1,0 +1,212 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>ShardKV | Jyjays's Blog</title><meta name="author" content="Jyjays"><meta name="copyright" content="Jyjays"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Shard Controllershardctrler 管理一系列编号配置。每个配置都描述一组副本组和分片到副本组的分配。每当需要更改此分配时，分片控制器都会使用新分配创建新配置。键&#x2F;值客户端和服务器在想要了解当前（或过去）配置时联系 shardctrler。  一共要实现四个RPC接口：Join, Leave, Move, Query，这四个接口提供给管理员进行添加新的副本组，消除副本组，在副本">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ShardKV">
+<meta property="og:url" content="https://jyjays.github.io/2025/02/15/MIT%206.5840/ShardKV/index.html">
+<meta property="og:site_name" content="Jyjays&#39;s Blog">
+<meta property="og:description" content="Shard Controllershardctrler 管理一系列编号配置。每个配置都描述一组副本组和分片到副本组的分配。每当需要更改此分配时，分片控制器都会使用新分配创建新配置。键&#x2F;值客户端和服务器在想要了解当前（或过去）配置时联系 shardctrler。  一共要实现四个RPC接口：Join, Leave, Move, Query，这四个接口提供给管理员进行添加新的副本组，消除副本组，在副本">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg">
+<meta property="article:published_time" content="2025-02-14T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-02-15T07:16:08.951Z">
+<meta property="article:author" content="Jyjays">
+<meta property="article:tag" content="Distributed System">
+<meta property="article:tag" content="Raft">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://jyjays.github.io/2025/02/15/MIT%206.5840/ShardKV/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ShardKV',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-02-15 15:16:08'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Jyjays's Blog</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">ShardKV</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-02-14T16:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-02-15T07:16:08.951Z" title="Updated 2025-02-15 15:16:08">2025-02-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Distributed-System/">Distributed System</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="ShardKV"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Shard-Controller"><a href="#Shard-Controller" class="headerlink" title="Shard Controller"></a>Shard Controller</h1><pre><code>shardctrler 管理一系列编号配置。每个配置都描述一组副本组和分片到副本组的分配。每当需要更改此分配时，分片控制器都会使用新分配创建新配置。键/值客户端和服务器在想要了解当前（或过去）配置时联系 shardctrler。
+
+一共要实现四个RPC接口：Join, Leave, Move, Query，这四个接口提供给管理员进行添加新的副本组，消除副本组，在副本组之间移动分片等操作。
+
+Join: 管理员使用 Join RPC 添加新的副本组。其参数是从唯一的非零副本组标识符 （GID） 到服务器名称列表的一组映射。shardctrler 应通过创建包含新副本组的新配置来做出反应。新配置应尽可能均匀地将分片分配给整组，并应移动尽可能少的分片以实现该目标。如果 GID 不是当前配置的一部分，则 shardctrler 应允许复用 GID（即应允许 GID 加入，然后离开，然后再次加入）。
+
+Leave: Leave RPC 的参数是加入过的组的 GID 列表。shardctrler 应创建一个不包含这些组的新配置，并将这些组的分片分配给其余组。新配置应在组之间尽可能均匀地划分分片，并应移动尽可能少的分片以实现该目标。
+
+Move: Move RPC 的参数是分片编号和 GID。shardctrler 应创建一个新配置，在该配置中将该分片分配给GID指定的组。Move 的目的是允许我们测试您的软件。Move 之后的 Join 或 Leave 可能会撤消 Move，因为 Join 和 Leave 会重新平衡。
+
+Quary: Query RPC 的参数是一个配置编号。shardctrler 使用具有该编号的配置进行回复。如果数字为 -1 或大于已知最大配置编号，则 shardctrler 应回复最新配置。Query（-1） 的结果应反映分片控制器在收到 Query（-1） RPC 之前完成处理的每个 Join、Leave 或 Move RPC。
+
+第一个配置应编号为零。它不应包含任何组，并且所有分片都应分配给 GID 零（无效的 GID）。下一个配置（为响应 Join RPC 而创建）应编号为 1。分片通常比组多得多（即，每个组将提供多个分片），以便可以以相当精细的粒度转移负载。
+</code></pre>
+<p>‍</p>
+<h1 id="Sharded-Key-Value-Server"><a href="#Sharded-Key-Value-Server" class="headerlink" title="Sharded Key&#x2F;Value Server"></a>Sharded Key&#x2F;Value Server</h1><pre><code>每个 shardkv 服务器都作为副本组的一部分运行。每个副本组都为某些键空间分片提供 Get、Put 和 Append作。在 client.go 中使用 key2shard（） 查找键属于哪个分片。多个副本组协作提供完整的分片集。shardctrler 服务的单个实例将分片分配给副本组;当此分配发生更改时，副本组必须将分片相互移交，同时确保客户端不会看到不一致的响应。
+
+存储系统必须为使用其客户端接口的应用程序提供线性化接口。也就是说，对 shardkv/client.go 中 Clerk.Get（）、Clerk.Put（） 和 Clerk.Append（） 方法的完整应用程序调用必须以相同的顺序影响所有副本。Clerk.Get（） 应该看到最近的 Put/Append 写入同一键的值。即使 Gets 和 Put 与配置更改几乎同时到达，也必须如此。
+
+仅当分片的 Raft 副本组中的大多数服务器处于活动状态并且可以相互通信，并且可以与大多数 shardctrler 服务器通信时，每个分片才能够进行存储操作。整个实现要达到可用性（处理请求并能够根据需要重新配置），即使某些副本组中的少数服务器已关闭、暂时不可用或运行缓慢。
+
+shardkv 服务器只是单个副本组的成员。给定副本组中的服务器集永远不会更改。
+
+我们为您提供 client.go 代码，该代码将每个 RPC 发送到负责 RPC 密钥的副本组。如果副本组表示它不负责密钥，它会重试;在这种情况下，客户端代码会向分片控制器询问最新配置，然后重试。您必须修改 client.go 作为支持处理重复客户端 RPC 的一部分，就像在 kvraft 实验室中一样。
+
+第一个任务是通过第一个 shardkv 测试。在此测试中，只有一个分片分配，因此代码应与 Lab 3 服务器的代码非常相似。最大的修改是让您的服务器检测配置何时发生，并开始接受其键与它现在拥有的分片匹配的请求。
+</code></pre>
+<p>‍</p>
+<h2 id="空日志检测"><a href="#空日志检测" class="headerlink" title="空日志检测"></a>空日志检测</h2><p>根据 raft 论文 5.4.2 节，Raft 的空日志活锁问题主要出现在这样一种情况中：当一个节点刚刚赢得选举成为领导者时，它可能没有自己任期内的日志条目（即没有新日志），而仅有旧任期的日志。根据 Raft 的安全性规则，只有来自当前任期的日志才能被领导者直接提交（通过多数派复制方式提交），而旧任期的日志则必须依靠“日志匹配属性”间接提交。</p>
+<p>如果新任期的领导者没有任何来自自己任期的日志，它可能无法通过复制来推进 commitIndex，因为多数节点可能只存有旧任期的日志。这样，领导者就可能陷入一种“活锁”状态：尽管它仍然认为自己是领导者，但由于没有一个当前任期的日志条目被提交，后续的客户端操作也无法被提交，从而无法产生新的日志条目，整个系统就一直卡在这个状态。</p>
+<p>所以空日志检测协程会定时检测 raft 层的 leader 是否拥有当前 term 的日志，如果没有则提交一条空日志，这使得新 leader 的状态机能够迅速达到最新状态，从而避免多 raft 组间的活锁状态。</p>
+<p>‍</p>
+<h2 id="GCing状态的意义"><a href="#GCing状态的意义" class="headerlink" title="GCing状态的意义"></a>GCing状态的意义</h2><pre><code>Pulling状态的下一个状态，意思是接收shard成功，准备向原shard持有者发送deleteShard RPC
+</code></pre>
+<p>‍</p>
+<h2 id="互相发送shard导致的死锁"><a href="#互相发送shard导致的死锁" class="headerlink" title="互相发送shard导致的死锁"></a>互相发送shard导致的死锁</h2><p>​<img src="https://s2.loli.net/2025/02/15/h836mpwsFzVEbqv.png" alt="image">​</p>
+<pre><code>新配置到达后，server 101分片的状态：1，2为Sending状态，3，4为Pulling状态，server 100分片的状态与101相反。server 101向server 100请求3，4分片，server 100向server 101请求1，2分片，如果分片迁移处理采用同步阻塞的方式进行：（即等待接收到分片后才会处理其他分片相关事务）那么如果二者同时向对方发送分片就会造成死锁
+</code></pre>
+<p>‍</p>
+<h1 id="Bug"><a href="#Bug" class="headerlink" title="Bug"></a>Bug</h1><h2 id="config跳跃bug"><a href="#config跳跃bug" class="headerlink" title="config跳跃bug"></a>config跳跃bug</h2><ul>
+<li><p>​<strong>​<code>get_gid == kv.gid</code>​</strong>​ <strong>的根源</strong>：</p>
+<ul>
+<li><strong>配置跳跃</strong>：若配置更新未严格按顺序应用（例如从配置 C1 直接跳到 C3，跳过 C2），可能导致旧配置中分片归属组 (<code>get_gid</code>​) 指向当前组。</li>
+<li><strong>状态设置错误</strong>：在 <code>processNewConfig</code>​ 中错误地将分片状态设为 <code>Pulling</code>​，但旧配置中的分片实际属于当前组。</li>
+</ul>
+</li>
+<li><p><strong>无法连接目标组</strong>：</p>
+<ul>
+<li>目标组服务器宕机或网络分区，导致 RPC 失败。</li>
+</ul>
+</li>
+</ul>
+<p>‍</p>
+<p>‍</p>
+<h2 id="ErrWrongGroup-bug"><a href="#ErrWrongGroup-bug" class="headerlink" title="ErrWrongGroup bug"></a>ErrWrongGroup bug</h2><pre><code>忘了处理ErrNoKey的情况了，导致一直认为是WrongGroup😡
+
+在Snapshot测试中偶尔会出现组成员与leader的shard状态不完全同步的情况，还没摸清出现这种情况的原因，考虑通过组内通信让leader再给组员发一遍信息
+</code></pre>
+<p>​<img src="https://s2.loli.net/2025/02/15/3VOmosubpWYaMBv.png" alt="image">​</p>
+<p>‍</p>
+<h2 id="Configuration-Update-bug"><a href="#Configuration-Update-bug" class="headerlink" title="Configuration Update bug"></a>Configuration Update bug</h2><pre><code>总是莫名其妙地shard pull失败，发现是Configuration更新协程在更新前没有检查shard状态，如果有不是serving状态的应该停止更新，忘了检查这一点会导致上一次pulling状态地shard还没有获得应有的数据就被更新掉了
+</code></pre>
+<p>‍</p>
+<h2 id="Last-Operation-lost-bug"><a href="#Last-Operation-lost-bug" class="headerlink" title="Last Operation lost bug"></a>Last Operation lost bug</h2><pre><code>算是最后一个bug吧，也是找了半天。表现为测试运行了一段时间后就没有了反应。一开始以为是发生了死锁，向进程发送了SIGQUIT信号后也没检查出来。随后在多个监测协程添加了调试输出，发现程序在正常工作，但是却没有put、get等操作的日志。在Client端添加了调试输出后， 发现PutAppend RPC的reply为空。排查后才得知是lastOperation中没有成功存储上一次操作的返回值，暂时先给重复操作返回OK后也能通过测试了。
+</code></pre>
+<p>‍</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://jyjays.github.io">Jyjays</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://jyjays.github.io/2025/02/15/MIT%206.5840/ShardKV/">https://jyjays.github.io/2025/02/15/MIT%206.5840/ShardKV/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Distributed-System/">Distributed System</a><a class="post-meta__tags" href="/tags/Raft/">Raft</a></div><div class="post_share"><div class="social-share" data-image="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2025/02/15/MIT%206.5840/KVRaft%20server/"><img class="prev-cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">KVRaft server</div></div></a></div><div class="next-post pull-right"><a href="/2025/02/15/MIT%206.5840/%E5%89%8D%E8%A8%80/"><img class="next-cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">前言</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2025/02/15/MIT%206.5840/KVRaft%20server/" title="KVRaft server"><img class="cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-15</div><div class="title">KVRaft server</div></div></a></div><div><a href="/2025/02/15/MIT%206.5840/Raft/" title="Raft"><img class="cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-15</div><div class="title">Raft</div></div></a></div><div><a href="/2025/02/15/MIT%206.5840/MapReduce/" title="MapReduce"><img class="cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-15</div><div class="title">MapReduce</div></div></a></div><div><a href="/2025/02/15/MIT%206.5840/%E5%89%8D%E8%A8%80/" title="前言"><img class="cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-15</div><div class="title">前言</div></div></a></div><div><a href="/2024/11/13/MapReduce/MapReduce/" title="MapReduce"><img class="cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-11-13</div><div class="title">MapReduce</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Jyjays</div><div class="author-info__description">A CS learner who is interested in DataBase System and Music.</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Shard-Controller"><span class="toc-number">1.</span> <span class="toc-text">Shard Controller</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Sharded-Key-Value-Server"><span class="toc-number">2.</span> <span class="toc-text">Sharded Key&#x2F;Value Server</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E6%97%A5%E5%BF%97%E6%A3%80%E6%B5%8B"><span class="toc-number">2.1.</span> <span class="toc-text">空日志检测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GCing%E7%8A%B6%E6%80%81%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-number">2.2.</span> <span class="toc-text">GCing状态的意义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%92%E7%9B%B8%E5%8F%91%E9%80%81shard%E5%AF%BC%E8%87%B4%E7%9A%84%E6%AD%BB%E9%94%81"><span class="toc-number">2.3.</span> <span class="toc-text">互相发送shard导致的死锁</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Bug"><span class="toc-number">3.</span> <span class="toc-text">Bug</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#config%E8%B7%B3%E8%B7%83bug"><span class="toc-number">3.1.</span> <span class="toc-text">config跳跃bug</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ErrWrongGroup-bug"><span class="toc-number">3.2.</span> <span class="toc-text">ErrWrongGroup bug</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Configuration-Update-bug"><span class="toc-number">3.3.</span> <span class="toc-text">Configuration Update bug</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Last-Operation-lost-bug"><span class="toc-number">3.4.</span> <span class="toc-text">Last Operation lost bug</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/MapReduce/" title="MapReduce"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MapReduce"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/MapReduce/" title="MapReduce">MapReduce</a><time datetime="2025-02-14T16:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/KVRaft%20server/" title="KVRaft server"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="KVRaft server"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/KVRaft%20server/" title="KVRaft server">KVRaft server</a><time datetime="2025-02-14T16:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/ShardKV/" title="ShardKV"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ShardKV"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/ShardKV/" title="ShardKV">ShardKV</a><time datetime="2025-02-14T16:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/%E5%89%8D%E8%A8%80/" title="前言"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="前言"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/%E5%89%8D%E8%A8%80/" title="前言">前言</a><time datetime="2025-02-14T16:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/Raft/" title="Raft"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Raft"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/Raft/" title="Raft">Raft</a><time datetime="2025-02-14T16:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Jyjays</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
