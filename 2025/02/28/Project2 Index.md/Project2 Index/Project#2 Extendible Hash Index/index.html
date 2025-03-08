@@ -1,0 +1,201 @@
+<!DOCTYPE html><html lang="zh_TW" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Extendible Hash Index | Jyjays's Blog</title><meta name="author" content="Jyjays"><meta name="copyright" content="Jyjays"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="​​ Task #1 Read&#x2F;Write Page Guards在P1中实现了页面的基本读写操作，现在我们需要先将其包装为具有RAII风格的类。在P1中的NewPage和FetchPage都会返回带有Pin的页面，当我们使用完后需要手动Unpin。在编程时如果忘记了Unpin，这个页面会无法被Evict，导致可用的缓存空间变小，性能降低。而且这个错误还很难发现（直到所有页面都被Pin住">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Extendible Hash Index">
+<meta property="og:url" content="https://jyjays.github.io/2025/02/28/Project2%20Index.md/Project2%20Index/Project#2%20Extendible%20Hash%20Index/index.html">
+<meta property="og:site_name" content="Jyjays&#39;s Blog">
+<meta property="og:description" content="​​ Task #1 Read&#x2F;Write Page Guards在P1中实现了页面的基本读写操作，现在我们需要先将其包装为具有RAII风格的类。在P1中的NewPage和FetchPage都会返回带有Pin的页面，当我们使用完后需要手动Unpin。在编程时如果忘记了Unpin，这个页面会无法被Evict，导致可用的缓存空间变小，性能降低。而且这个错误还很难发现（直到所有页面都被Pin住">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png">
+<meta property="article:published_time" content="2025-02-28T08:00:00.000Z">
+<meta property="article:modified_time" content="2025-03-08T12:05:44.007Z">
+<meta property="article:author" content="Jyjays">
+<meta property="article:tag" content="Database, Index">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png"><link rel="shortcut icon" href="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg"><link rel="canonical" href="https://jyjays.github.io/2025/02/28/Project2%20Index.md/Project2%20Index/Project#2%20Extendible%20Hash%20Index/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Extendible Hash Index',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-03-08 04:05:44'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Jyjays's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Extendible Hash Index</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-02-28T08:00:00.000Z" title="Created 2025-02-28 00:00:00">2025-02-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-03-08T12:05:44.007Z" title="Updated 2025-03-08 04:05:44">2025-03-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Database/">Database</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Extendible Hash Index"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>​​</p>
+<h1 id="Task-1-Read-Write-Page-Guards"><a href="#Task-1-Read-Write-Page-Guards" class="headerlink" title="Task #1 Read&#x2F;Write Page Guards"></a>Task #1 Read&#x2F;Write Page Guards</h1><p>在P1中实现了页面的基本读写操作，现在我们需要先将其包装为具有RAII风格的类。在P1中的NewPage和FetchPage都会返回带有Pin的页面，当我们使用完后需要手动Unpin。在编程时如果忘记了Unpin，这个页面会无法被Evict，导致可用的缓存空间变小，性能降低。而且这个错误还很难发现（直到所有页面都被Pin住无法获取新的页面）。</p>
+<p>要实现三个类：BasicPageGuard、ReadPageGuard、WritePageGuard。其中BasicPageGuard包括bpm (buffer pool manager), page, is_dirty。ReadPageGuard和WritePageGuard是BasicPageGuard的友元类。</p>
+<p>理解了RAII的工作原理后，实现起来并不难。主要在于所有权的转移以及内存的释放。BasicPageGuard要实现的函数有：</p>
+<ul>
+<li><p>构造函数（移动构造函数）：接管that的资源，并将that的资源释放。&amp;&amp;表示右值引用，表明它指向的对象即将被销毁</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BasicPageGuard::<span class="built_in">BasicPageGuard</span>(BasicPageGuard &amp;&amp;that) <span class="keyword">noexcept</span></span><br><span class="line">    : <span class="built_in">bpm_</span>(that.bpm_), <span class="built_in">page_</span>(that.page_), <span class="built_in">is_dirty_</span>(that.is_dirty_) &#123;</span><br><span class="line">  that.bpm_ = <span class="literal">nullptr</span>;</span><br><span class="line">  that.page_ = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Drop() ：调用bpm_的UnpinPage函数，然后将资源释放。Drop函数能够主动释放资源，不用等待对象析构。</p>
+</li>
+<li><p>移动赋值运算符：与移动构造函数类似，还需要检查右值是否与自身相等，然后将原来持有的资源通过Drop释放掉。</p>
+</li>
+<li><p>析构函数：调用Drop将资源释放。</p>
+</li>
+<li><p>Upgrade函数：UpgradeWrite和UpgradeRead两个，在进行升级时要调用Page自身的锁，进行保护。</p>
+</li>
+</ul>
+<p>此后的ReadPageGuard和WritePageGuard在BasicGuard的基础上，在析构和Drop时进行解锁，并修改is_dirty标志，除此之外需要释放资源时调用BasicGuard的Drop函数即可。最后在Buffer Pool Manager部分再对NewPage和FetchPage函数进行一次包装，包装成FetchPageWrite、FetchPageRead、NewPageGuard几个函数，方便后面使用。</p>
+<h1 id="Task-2-Extendible-Hash-Table-Pages"><a href="#Task-2-Extendible-Hash-Table-Pages" class="headerlink" title="Task #2 Extendible Hash Table Pages"></a>Task #2 Extendible Hash Table Pages</h1><p><img src="https://s2.loli.net/2025/03/04/rSOXJtKvy6n51Nw.png" alt="image"></p>
+<p>这一部分要实现可拓展哈希表的物理结构以及一些基础方法，为实现哈希逻提供一些接口。辑。</p>
+<h2 id="Hash-Table-Header-Page"><a href="#Hash-Table-Header-Page" class="headerlink" title="Hash Table Header Page"></a>Hash Table Header Page</h2><p>header page，索引查询的开始，负责将要查询的键映射到正确的directory中。使用max_size进行初始化，此后max_size不再变化，也就是说directory的数目不会变化          （2 ^ max_size）。</p>
+<p>hash_to_directory : 利用数据字节的<strong>高位</strong>进行hash，来查找相应的directory</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hash &gt;&gt; (<span class="number">32</span> - max_depth_);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Hash-Table-Directory-Page"><a href="#Hash-Table-Directory-Page" class="headerlink" title="Hash Table Directory Page"></a>Hash Table Directory Page</h2><p>Directory Page指向具体存储索引的bucket page。Bustub中的每个Page大小4096字节，Directory的字节分配如下图所示：</p>
+<p><img src="https://s2.loli.net/2025/03/04/WKSI9p8uPkGw1nl.png" alt="image"></p>
+<p>hash_to_bucket ：利用数据字节的<strong>低位</strong>进行hash，来查找相应的bucket</p>
+<p>这部分的难点是根据<code>global_depth</code>​的变化进行表的分裂与合并。数据结构为：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">uint32_t</span> max_depth_;</span><br><span class="line"><span class="type">uint32_t</span> global_depth_;</span><br><span class="line"><span class="type">uint8_t</span> local_depths_[HTABLE_DIRECTORY_ARRAY_SIZE];</span><br><span class="line"><span class="type">page_id_t</span> bucket_page_ids_[HTABLE_DIRECTORY_ARRAY_SIZE];</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>local_depths_</code>​是维护该directory下每个bucket的深度，bucket_page_ids_则存储了所有bucket的索引。</p>
+<p>当需要插入的位置的local_depth等于global_depth时，就需要增长global_depth，目前我采取的思路是：</p>
+<ul>
+<li>达到增长条件时则调用IncrGlobalDepth()函数，同时在该函数中还会对现有的bucket进行分裂，并初始化</li>
+<li>函数调用关系为：IncrGlobalDepth() -&gt; SetBucketPageId() -&gt; UpdateLocalDepth -&gt; SetLocalDepth()</li>
+</ul>
+<p>目前这个思路能通过测试，但是函数之间的相互嵌套太紧密了，写的时候就觉得抽象，后续review的时候看起来更抽象，悔不当初😡。</p>
+<p>最关键的一个函数，也是贯穿之后具体实现的一个函数应该就是GetSplitImageIndex了：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">ExtendibleHTableDirectoryPage::GetSplitImageIndex</span><span class="params">(<span class="type">uint32_t</span> bucket_idx)</span> <span class="type">const</span> -&gt; <span class="type">uint32_t</span> </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> local_depth_mask = <span class="built_in">GetLocalDepthMask</span>(bucket_idx);              <span class="comment">// 11</span></span><br><span class="line">  <span class="keyword">auto</span> local_depth = <span class="built_in">GetLocalDepth</span>(bucket_idx);                       <span class="comment">// 假设为2</span></span><br><span class="line">  <span class="keyword">return</span> (bucket_idx &amp; local_depth_mask) ^ (<span class="number">1</span> &lt;&lt; (local_depth - <span class="number">1</span>));  <span class="comment">// 10-&gt;00 01-&gt;11 11-&gt;01 00-&gt;10</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先，bucket的local_depth是什么呢？这个由指向bucket的direcotory指针有关系。一个bucket可以被多个directory指针指向，指向bucket的指针个数应该为2^(global_depth - local_depth)，local_depth会随着指向该bucket的指针个数变化。而SplitIndex就是通过<strong>位操作翻转当前本地深度（Local Depth）的最高有效位</strong>得到的。举例来说，我们从0开始，这时local_depth(ld) &#x3D; 0，global_depth(gd) &#x3D; 0，当global_depth &#x3D; 1时，local_depth也应该随之变为1，此时易得0得splitIndex为1；继续，gd &#x3D; 2, ld &#x3D; 2，00 -&gt; 01，01 -&gt; 11…就这样一生二、二生四。</p>
+<p>这个计算策略主要还是为了进行Merge时方便，当Decrease Global Depth时，需要将一些bucket进行合并，一个bucket只能与分裂出它得原bucket合并，这样只需要再对掩码对应的最高位进行一次取反就找到原bucket了。</p>
+<h2 id="Hash-Table-Bucket-Page"><a href="#Hash-Table-Bucket-Page" class="headerlink" title="Hash Table Bucket Page"></a>Hash Table Bucket Page</h2><p>这一部分就是负责管理值了，没什么多说的。</p>
+<h1 id="Task-3-Extendible-Hashing-Implementation"><a href="#Task-3-Extendible-Hashing-Implementation" class="headerlink" title="Task #3 Extendible Hashing Implementation"></a>Task #3 Extendible Hashing Implementation</h1><p>实现了前两个任务的基础方法后，完成这一部分就简单了很多。主要的难点在于插值时如果要插入一个新的bucket，那么还需要将原来处于这个位置的bucket（如果有的话）中的值进行重新哈希处理（原bucket可能有多个指针指向，当插入新的bucket后，为了保证下一次查询时每个值都在正确的位置，需要将原bucket中的值进行重新分配）。</p>
+<blockquote>
+<p>现有问题为不同情况下，每次插入新的bucket时都使用同一个函数InsertToNewBucket()，导致函数体有些臃肿复杂，需要后续分情况拆分。</p>
+</blockquote>
+<p>另一个难点是删除值的时候，如果删除后bucket为空，那么要考虑将bucket与split_bucket合并，合并条件：</p>
+<ol>
+<li>Only empty buckets can be merged.</li>
+<li>Buckets can only be merged with their split image if their split image has the same local depth.</li>
+<li>You should keep merging recursively if the <strong>new split image</strong> of the merged bucket is empty.</li>
+</ol>
+<p>但是为了合并完全，一些不在递归路径上的空bucket（在IncroGlobalDepth时会产生一些空bucket）也要考虑合并，这也是困扰我很久的点，因为没有一个高效的方法能够找到所有的空bucket，而用额外的存储空间存储空表也不可行，目前的思路是要进行表合并时遍历整个directory查找空表，然后对每个空表进行合并操作。</p>
+<p>‍</p>
+<p>‍</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://jyjays.github.io">Jyjays</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://jyjays.github.io/2025/02/28/Project2%20Index.md/Project2%20Index/Project#2%20Extendible%20Hash%20Index/">https://jyjays.github.io/2025/02/28/Project2%20Index.md/Project2%20Index/Project#2%20Extendible%20Hash%20Index/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Database-Index/">Database, Index</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/"><img class="prev-cover" src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">B+ Tree</div></div></a></div><div class="next-post pull-right"><a href="/2025/02/21/Project%203%20Query%20Execution/Project%203%20Query%20Execution/"><img class="next-cover" src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Project 3 Query Execution</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Jyjays</div><div class="author-info__description">A CS learner who is interested in DataBase System and Music.</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-1-Read-Write-Page-Guards"><span class="toc-number">1.</span> <span class="toc-text">Task #1 Read&#x2F;Write Page Guards</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-2-Extendible-Hash-Table-Pages"><span class="toc-number">2.</span> <span class="toc-text">Task #2 Extendible Hash Table Pages</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hash-Table-Header-Page"><span class="toc-number">2.1.</span> <span class="toc-text">Hash Table Header Page</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hash-Table-Directory-Page"><span class="toc-number">2.2.</span> <span class="toc-text">Hash Table Directory Page</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hash-Table-Bucket-Page"><span class="toc-number">2.3.</span> <span class="toc-text">Hash Table Bucket Page</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-3-Extendible-Hashing-Implementation"><span class="toc-number">3.</span> <span class="toc-text">Task #3 Extendible Hashing Implementation</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/03/08/Project2%20Index.md/Project2%20Index/B+%20Tree%20questions/" title="B+ Tree questions"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="B+ Tree questions"/></a><div class="content"><a class="title" href="/2025/03/08/Project2%20Index.md/Project2%20Index/B+%20Tree%20questions/" title="B+ Tree questions">B+ Tree questions</a><time datetime="2025-03-08T08:00:00.000Z" title="Created 2025-03-08 00:00:00">2025-03-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/" title="B+ Tree"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="B+ Tree"/></a><div class="content"><a class="title" href="/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/" title="B+ Tree">B+ Tree</a><time datetime="2025-02-28T08:00:00.000Z" title="Created 2025-02-28 00:00:00">2025-02-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/28/Project2%20Index.md/Project2%20Index/Project#2%20Extendible%20Hash%20Index/" title="Extendible Hash Index"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Extendible Hash Index"/></a><div class="content"><a class="title" href="/2025/02/28/Project2%20Index.md/Project2%20Index/Project#2%20Extendible%20Hash%20Index/" title="Extendible Hash Index">Extendible Hash Index</a><time datetime="2025-02-28T08:00:00.000Z" title="Created 2025-02-28 00:00:00">2025-02-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/21/Project%203%20Query%20Execution/Project%203%20Query%20Execution/" title="Project 3 Query Execution"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Project 3 Query Execution"/></a><div class="content"><a class="title" href="/2025/02/21/Project%203%20Query%20Execution/Project%203%20Query%20Execution/" title="Project 3 Query Execution">Project 3 Query Execution</a><time datetime="2025-02-20T23:55:00.000Z" title="Created 2025-02-20 15:55:00">2025-02-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/KVRaft%20server/" title="KVRaft server"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="KVRaft server"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/KVRaft%20server/" title="KVRaft server">KVRaft server</a><time datetime="2025-02-15T08:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Jyjays</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

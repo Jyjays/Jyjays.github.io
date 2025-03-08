@@ -1,0 +1,190 @@
+<!DOCTYPE html><html lang="zh_TW" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>B+ Tree | Jyjays's Blog</title><meta name="author" content="Jyjays"><meta name="copyright" content="Jyjays"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Task #1 B+ tree pages​​ B+ Tree Page这是B+树叶子节点和内部节点的基类，包含两个派生类的共享信息。  B+ Internal Page内部页面（即，内在节点）存储M个有序键和M + 1个子指针（即Page_ids）到其他B +树页面。这些键和指针内部表示为key&#x2F;page_id对的数组。由于子指针的数量比密钥数多一个，因此KEY_ARRAY_中的第一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="B+ Tree">
+<meta property="og:url" content="https://jyjays.github.io/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/index.html">
+<meta property="og:site_name" content="Jyjays&#39;s Blog">
+<meta property="og:description" content="Task #1 B+ tree pages​​ B+ Tree Page这是B+树叶子节点和内部节点的基类，包含两个派生类的共享信息。  B+ Internal Page内部页面（即，内在节点）存储M个有序键和M + 1个子指针（即Page_ids）到其他B +树页面。这些键和指针内部表示为key&#x2F;page_id对的数组。由于子指针的数量比密钥数多一个，因此KEY_ARRAY_中的第一个">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png">
+<meta property="article:published_time" content="2025-02-28T08:00:00.000Z">
+<meta property="article:modified_time" content="2025-03-08T12:04:00.588Z">
+<meta property="article:author" content="Jyjays">
+<meta property="article:tag" content="Database, B+ Tree, Index">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png"><link rel="shortcut icon" href="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg"><link rel="canonical" href="https://jyjays.github.io/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'B+ Tree',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-03-08 04:04:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Jyjays's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">B+ Tree</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-02-28T08:00:00.000Z" title="Created 2025-02-28 00:00:00">2025-02-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-03-08T12:04:00.588Z" title="Updated 2025-03-08 04:04:00">2025-03-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Database/">Database</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="B+ Tree"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Task-1-B-tree-pages"><a href="#Task-1-B-tree-pages" class="headerlink" title="Task #1 B+ tree pages"></a>Task #1 B+ tree pages</h1><p>​​</p>
+<h2 id="B-Tree-Page"><a href="#B-Tree-Page" class="headerlink" title="B+ Tree Page"></a>B+ Tree Page</h2><p>这是B+树叶子节点和内部节点的基类，包含两个派生类的共享信息。</p>
+<p><img src="https://s2.loli.net/2025/02/28/8aFOSHQgbA63TVZ.png" alt="image"></p>
+<h2 id="B-Internal-Page"><a href="#B-Internal-Page" class="headerlink" title="B+ Internal Page"></a>B+ Internal Page</h2><p>内部页面（即，内在节点）存储M个有序键和M + 1个子指针（即Page_ids）到其他B +树页面。这些键和指针内部表示为key&#x2F;page_id对的数组。由于子指针的数量比密钥数多一个，因此KEY_ARRAY_中的第一个键设置为无效，并且查找应始终从第二个键开始。</p>
+<h2 id="B-Leaf-Page"><a href="#B-Leaf-Page" class="headerlink" title="B+ Leaf Page"></a>B+ Leaf Page</h2><p>叶页面存储M个键及其M相应值。在您的实施中，该值始终是存储实际元组的64位记录ID -RID类。leaf page 对键&#x2F;值对的数量具有与内部页面相同的限制，并且应遵循相同的操作以合并，分裂和重新分配键。</p>
+<p>每个B+树叶&#x2F;内部页面都对应于缓冲池获取的内存页面的内容（即数据_部分）。每次您从&#x2F;从&#x2F;写入叶子或内部页面时，都必须首先从缓冲池（使用其唯一的page_id）获取页面，重新诠释将其施加到叶子或内部页面上，然后在阅读或写入&#x2F;写入或写入后，将页面放在叶子或内部页面上。</p>
+<h1 id="Task-2-B-Tree-Operations-Insertion-Deletion-and-Point-Search"><a href="#Task-2-B-Tree-Operations-Insertion-Deletion-and-Point-Search" class="headerlink" title="Task #2 - B+Tree Operations (Insertion, Deletion, and Point Search)"></a>Task #2 - B+Tree Operations (Insertion, Deletion, and Point Search)</h1><p><a target="_blank" rel="noopener" href="https://bplustree.app/">bplustree.app&#x2F;</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cs.usfca.edu/~galles/visualization/BPlusTree.html">www.cs.usfc	a.edu/~galles&#x2F;visualization&#x2F;BPlusTree.html</a></p>
+<p>两个B+ 树可视化网站，下面是Github上的一个B+树的简单实现</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/niteshkumartiwari/B-Plus-Tree">github.com&#x2F;niteshkumartiwari&#x2F;B-Plus-Tree</a></p>
+<p>‍</p>
+<h2 id="Insert："><a href="#Insert：" class="headerlink" title="Insert："></a>Insert：</h2><ol>
+<li>如果节点有空余空间，则将键&#x2F;引用对插入节点。</li>
+<li>如果节点已满，则将其拆分为两个节点，并在两个节点之间均匀分布键。如果节点是叶节点，则复制这两个节点中第二个节点中的最小值，并重复此插入算法以将其插入父节点。如果节点不是叶节点，则在拆分过程中排除中间值，并重复此插入算法以将此排除的值插入父节点。</li>
+</ol>
+<p>上面的github的小型B+ 树在进行插入和节点分裂时都用了std::upper_bound二分查找函数，右偏实现。</p>
+<p>为了方便编写对整颗b+树的操作，可以先将局部的插入和查找操作实现，以下是Internal Page的插入和查找函数，有一些细节需要注意：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">INDEX_TEMPLATE_ARGUMENTS</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">B_PLUS_TREE_INTERNAL_PAGE_TYPE::FindValue</span><span class="params">(<span class="type">const</span> KeyType &amp;key, <span class="type">const</span> KeyComparator &amp;comparator,</span></span></span><br><span class="line"><span class="params"><span class="function">                                               <span class="type">int</span> *child_page_index)</span> <span class="type">const</span> -&gt; ValueType </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> compare_first = [comparator](<span class="type">const</span> MappingType &amp;lhs, KeyType rhs) -&gt; <span class="type">bool</span> &#123;</span><br><span class="line">    <span class="comment">// Traverse the key until the first key that is bigger than the input key</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">comparator</span>(lhs.first, rhs) &lt;= <span class="number">0</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="comment">// NOTE - the first key is a dummy key, so we start from the second key</span></span><br><span class="line">  <span class="comment">// lower_bound returns the first element that is not less than key</span></span><br><span class="line">  <span class="keyword">auto</span> res = std::<span class="built_in">lower_bound</span>(array_ + <span class="number">1</span>, array_ + <span class="built_in">GetSize</span>(), key, compare_first);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Then we need to move back one step to get the the first element that is less than key</span></span><br><span class="line">  res = std::<span class="built_in">prev</span>(res);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (child_page_index != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">    *child_page_index = std::<span class="built_in">distance</span>(array_, res);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> res-&gt;second;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">INDEX_TEMPLATE_ARGUMENTS</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">B_PLUS_TREE_INTERNAL_PAGE_TYPE::Insert</span><span class="params">(<span class="type">const</span> KeyType &amp;key, <span class="type">const</span> ValueType &amp;value, <span class="type">const</span> KeyComparator &amp;comparator)</span></span></span><br><span class="line"><span class="function">    -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> compare_first = [&amp;comparator](<span class="type">const</span> MappingType &amp;lhs, <span class="type">const</span> KeyType &amp;key) -&gt; <span class="type">bool</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">comparator</span>(lhs.first, key) &lt; <span class="number">0</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">auto</span> it = std::<span class="built_in">lower_bound</span>(array_, array_ + <span class="built_in">GetSize</span>(), key, compare_first);</span><br><span class="line">  <span class="type">int</span> size = <span class="built_in">GetSize</span>();</span><br><span class="line">  <span class="type">int</span> index = std::<span class="built_in">distance</span>(array_, it);</span><br><span class="line">  <span class="keyword">if</span> (index &lt; size &amp;&amp; <span class="built_in">comparator</span>(array_[index].first, key) == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">BUSTUB_ASSERT</span>(size &lt; <span class="built_in">GetMaxSize</span>(), <span class="string">&quot;The internal page is full.&quot;</span>);</span><br><span class="line"></span><br><span class="line">  std::<span class="built_in">move_backward</span>(array_ + index, array_ + size, array_ + size + <span class="number">1</span>);</span><br><span class="line">  array_[index] = MappingType&#123;key, value&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">IncreaseSize</span>(<span class="number">1</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>lower_bound的作用是查找第一个<strong>不满足条件</strong>的键，那么比较函数的定义就比较重要。在FindValue函数中比较函数使用的是&lt;&#x3D;，表明lower_bound查找到的键将会大于key，随后进行一个prev操作，那么pointer指向的子页面的key都将小于等于key（这么做是为了照顾到array_[0]处vice key的指针）；而在Insert函数中，由于vice key在page初始化时已经存在值（在page分裂时产生了中间键会插入到这个位置），以后插入的key，根据B+树的性质，都会大于vice key的指针指向的页面的所有值，所以不用考虑向vice插值的可能，这时比较函数就可以直接使用&lt;。</p>
+<h2 id="Delete："><a href="#Delete：" class="headerlink" title="Delete："></a>Delete：</h2><p>这里主要讨论delete发生后节点size &lt; minsize的情况。这是有两种策略：重分配和合并节点。</p>
+<p>翻看了一些别人实现的B+树，发现重分配是优先考虑的策略，和下图中的伪代码顺序不同，我也更倾向于先重分配一点，因为这样不需要递归地进行删除操作。在保证兄弟节点的size不小于minsize的条件下，重分配策略从左兄弟节点借用它的最大值，或者从右兄弟节点借用最小值，然后更新父节点对应变化值的key。要注意此处的兄弟节点一定是同一父节点下的，不能跨父节点而借。</p>
+<p>如果兄弟节点都没得借，那就只能进行合并了。</p>
+<p><img src="https://s2.loli.net/2025/03/05/ulUMJAjG8WnTDxQ.png" alt="Screenshot_20250305_113612_com_superace_updf_PrimaryPDFEditActivity"></p>
+<p>‍</p>
+<h3 id="重分配"><a href="#重分配" class="headerlink" title="重分配"></a>重分配</h3><p>重分配需要注意的要点是，从左右兄弟节点获取值时要更新父节点中对应指针的Key，而且左右两种情况更新的位置不同。如下图所示，我们要删除15这个Key，删除后发现需要从它唯一的左兄弟节点获取11这个Key，那么指向该节点的指针的Key就不能是15了（Key应当为指向的页面的最小值），需要将其更新为11。</p>
+<p><img src="https://s2.loli.net/2025/03/07/VvLwAQKUscxk7fu.png" alt="image"><img src="https://s2.loli.net/2025/03/07/twoFm4hyinGU1sx.png" alt="image"></p>
+<p>同理，如果是从右兄弟节点获取的值，同样需要更新父节点的Key，但是这时候更新的并不是指向被删除了Key的页面对应的Key，而是右兄弟节点对应的Key，因为右兄弟节点的最小值发生了变化。</p>
+<p><img src="https://s2.loli.net/2025/03/07/Uw7ZA5XhuqsGLri.png" alt="image"><img src="https://s2.loli.net/2025/03/07/F9aKh72RBbToLUM.png" alt="image"></p>
+<p>至于是否需要递归地更新更上层的节点，虽然在图源的可视化网站进行了更新，但是我认为是没有必要的。更新父节点的Key是为了防止这个局部出现父节点的Key大于该Key指向的子节点的最小值的情况出现，而在更上层，只要不再发生重分配或者合并时，每个子节点（这里的子节点是针对更上层的节点而言）的最小值最小也不会小于其父节点的分隔键。每个Internal Page负责维护其子节点的平衡，不会影响更上层的平衡。</p>
+<h3 id="合并"><a href="#合并" class="headerlink" title="合并"></a>合并</h3><p>合并时遵循一个策略：不管删除的是哪个节点的值，合并时都是将右边的节点合并到左边的节点。这样做有两个好处：</p>
+<ul>
+<li>实现起来思路更清晰，所有的合并方向相同，代码更简洁</li>
+<li>不用处理vice key，从父节点中删除的都是中间的Key，除非将父节点删空，不然不会影响分隔键，更加稳定</li>
+</ul>
+<p>想实现上述策略也很简单，判断一下要合并的是左兄弟还是右兄弟，如果是左兄弟，那么左兄弟就是要保留的节点，反之，自身就是要保留的节点。</p>
+<p>此外，如果递归合并到了根节点，合并后根节点只剩一个子节点，那么就可以让这个子节点成为新的根节点。</p>
+<p>‍</p>
+<h2 id="Concurrency-Control"><a href="#Concurrency-Control" class="headerlink" title="Concurrency Control"></a>Concurrency Control</h2><p> 并发通过Context和PageGuard实现，Context中会存储从根节点到要寻找的Key的路径上所有节点的Guard，只要不释放，其他线程就不能获取这条路径上任何一个节点的Page Latch。为了保证并行性，还要在合适的时机释放掉根节点的PageGuard，否则别的线程根本无法对B+树的其他部分做任何操作。</p>
+<h2 id="BUG"><a href="#BUG" class="headerlink" title="BUG"></a>BUG</h2><p>在创建新的页面时，由于使用的是NewPageGuard，需要将其升级为WritePageGuard才行，而Upgrade的结果必须用一个局部变量存储起来，不能偷懒直接将其cast为BPlusTreePage，否则Upgrade返回的新的Page Guard将会直接调用析构函数UnPin相应的Page，导致页面被错误的Evict！</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FIXME - Wrong usage of upgrade, the ~WritePageGuard() will release the latch.</span></span><br><span class="line">  <span class="comment">// LeafPage *new_leaf_page = bpm_-&gt;NewPageGuarded(&amp;new_page_id).UpgradeWrite().AsMut&lt;LeafPage&gt;();</span></span><br><span class="line">  <span class="keyword">auto</span> new_page_guard = bpm_-&gt;<span class="built_in">NewPageGuarded</span>(&amp;new_page_id);</span><br><span class="line">  <span class="keyword">auto</span> new_write_guard = new_page_guard.<span class="built_in">UpgradeWrite</span>();</span><br><span class="line">  LeafPage *new_leaf_page = new_write_guard.<span class="built_in">AsMut</span>&lt;LeafPage&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>类似的，在使用FetchPageWrite&#x2F;Read时，如果不将它存放到write_set中的话，应该创建一个局部变量保存这个guard，至少保证在完成对该page的操作完成前这个guard不会被释放。</p>
+<p>‍</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>整体写下来还是很爽的，在教材和各种已有实现以及可视化网页的加持下，感觉写起来思路还是很清晰的，Debug也比改可扩展哈希表时轻松很多，所以感觉B+树的实现难度比可扩展哈希要简单一点（也有可能是我之前太菜了。。。）。由于之前对RAII的理解不够深刻，使用了好多临时变量存储PageGuard，导致了很多莫名其妙的bug，好在自己还是有心眼跟踪一下page id的变化，不然可能耽误很多时间。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://jyjays.github.io">Jyjays</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://jyjays.github.io/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/">https://jyjays.github.io/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Database-B-Tree-Index/">Database, B+ Tree, Index</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2025/03/08/Project2%20Index.md/Project2%20Index/B+%20Tree%20questions/"><img class="prev-cover" src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">B+ Tree questions</div></div></a></div><div class="next-post pull-right"><a href="/2025/02/28/Project2%20Index.md/Project2%20Index/Project#2%20Extendible%20Hash%20Index/"><img class="next-cover" src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Extendible Hash Index</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2025/03/08/Project2%20Index.md/Project2%20Index/B+%20Tree%20questions/" title="B+ Tree questions"><img class="cover" src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-08</div><div class="title">B+ Tree questions</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Jyjays</div><div class="author-info__description">A CS learner who is interested in DataBase System and Music.</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">13</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-1-B-tree-pages"><span class="toc-number">1.</span> <span class="toc-text">Task #1 B+ tree pages</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#B-Tree-Page"><span class="toc-number">1.1.</span> <span class="toc-text">B+ Tree Page</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#B-Internal-Page"><span class="toc-number">1.2.</span> <span class="toc-text">B+ Internal Page</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#B-Leaf-Page"><span class="toc-number">1.3.</span> <span class="toc-text">B+ Leaf Page</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-2-B-Tree-Operations-Insertion-Deletion-and-Point-Search"><span class="toc-number">2.</span> <span class="toc-text">Task #2 - B+Tree Operations (Insertion, Deletion, and Point Search)</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Insert%EF%BC%9A"><span class="toc-number">2.1.</span> <span class="toc-text">Insert：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Delete%EF%BC%9A"><span class="toc-number">2.2.</span> <span class="toc-text">Delete：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E5%88%86%E9%85%8D"><span class="toc-number">2.2.1.</span> <span class="toc-text">重分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E5%B9%B6"><span class="toc-number">2.2.2.</span> <span class="toc-text">合并</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Concurrency-Control"><span class="toc-number">2.3.</span> <span class="toc-text">Concurrency Control</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BUG"><span class="toc-number">2.4.</span> <span class="toc-text">BUG</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/03/08/Project2%20Index.md/Project2%20Index/B+%20Tree%20questions/" title="B+ Tree questions"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="B+ Tree questions"/></a><div class="content"><a class="title" href="/2025/03/08/Project2%20Index.md/Project2%20Index/B+%20Tree%20questions/" title="B+ Tree questions">B+ Tree questions</a><time datetime="2025-03-08T08:00:00.000Z" title="Created 2025-03-08 00:00:00">2025-03-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/" title="B+ Tree"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="B+ Tree"/></a><div class="content"><a class="title" href="/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/" title="B+ Tree">B+ Tree</a><time datetime="2025-02-28T08:00:00.000Z" title="Created 2025-02-28 00:00:00">2025-02-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/28/Project2%20Index.md/Project2%20Index/Project#2%20Extendible%20Hash%20Index/" title="Extendible Hash Index"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Extendible Hash Index"/></a><div class="content"><a class="title" href="/2025/02/28/Project2%20Index.md/Project2%20Index/Project#2%20Extendible%20Hash%20Index/" title="Extendible Hash Index">Extendible Hash Index</a><time datetime="2025-02-28T08:00:00.000Z" title="Created 2025-02-28 00:00:00">2025-02-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/21/Project%203%20Query%20Execution/Project%203%20Query%20Execution/" title="Project 3 Query Execution"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Project 3 Query Execution"/></a><div class="content"><a class="title" href="/2025/02/21/Project%203%20Query%20Execution/Project%203%20Query%20Execution/" title="Project 3 Query Execution">Project 3 Query Execution</a><time datetime="2025-02-20T23:55:00.000Z" title="Created 2025-02-20 15:55:00">2025-02-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/15/MIT%206.5840/KVRaft%20server/" title="KVRaft server"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="KVRaft server"/></a><div class="content"><a class="title" href="/2025/02/15/MIT%206.5840/KVRaft%20server/" title="KVRaft server">KVRaft server</a><time datetime="2025-02-15T08:00:00.000Z" title="Created 2025-02-15 00:00:00">2025-02-15</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Jyjays</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
