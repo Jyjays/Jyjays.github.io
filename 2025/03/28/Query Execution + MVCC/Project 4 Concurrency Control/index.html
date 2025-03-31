@@ -1,0 +1,336 @@
+<!DOCTYPE html><html lang="zh_TW" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Project 4 Concurrency Control | Jyjays's Blog</title><meta name="author" content="Jyjays"><meta name="copyright" content="Jyjays"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Task #1 TimeStamps实现事务管理器以正确给事务分配时间戳。 当事务开始时，它将分配一个read timestamp，来自最新提交的事务的commit timestamp。在事务提交时，将分配单调递增的commit timestamp。read timestamp 确定可以通过事务读取哪些数据，commit timestamp确定事务的序列化顺序。  read timestamp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Project 4 Concurrency Control">
+<meta property="og:url" content="https://jyjays.github.io/2025/03/28/Query%20Execution%20+%20MVCC/Project%204%20Concurrency%20Control/index.html">
+<meta property="og:site_name" content="Jyjays&#39;s Blog">
+<meta property="og:description" content="Task #1 TimeStamps实现事务管理器以正确给事务分配时间戳。 当事务开始时，它将分配一个read timestamp，来自最新提交的事务的commit timestamp。在事务提交时，将分配单调递增的commit timestamp。read timestamp 确定可以通过事务读取哪些数据，commit timestamp确定事务的序列化顺序。  read timestamp">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png">
+<meta property="article:published_time" content="2025-03-28T08:00:00.000Z">
+<meta property="article:modified_time" content="2025-03-31T07:24:01.513Z">
+<meta property="article:author" content="Jyjays">
+<meta property="article:tag" content="MVCC">
+<meta property="article:tag" content="Concurrency Control">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png"><link rel="shortcut icon" href="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg"><link rel="canonical" href="https://jyjays.github.io/2025/03/28/Query%20Execution%20+%20MVCC/Project%204%20Concurrency%20Control/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Project 4 Concurrency Control',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-03-30 23:24:01'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">16</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">13</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Jyjays's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Project 4 Concurrency Control</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-03-28T08:00:00.000Z" title="Created 2025-03-28 00:00:00">2025-03-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-03-31T07:24:01.513Z" title="Updated 2025-03-30 23:24:01">2025-03-30</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Project 4 Concurrency Control"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://s2.loli.net/2025/03/25/gjBrPa3nISQw8EZ.png"></p>
+<h1 id="Task-1-TimeStamps"><a href="#Task-1-TimeStamps" class="headerlink" title="Task #1 TimeStamps"></a>Task #1 TimeStamps</h1><p>实现事务管理器以正确给事务分配时间戳。</p>
+<p>当事务开始时，它将分配一个read timestamp，来自最新提交的事务的commit timestamp。在事务提交时，将分配单调递增的commit timestamp。read timestamp 确定可以通过事务读取哪些数据，commit timestamp确定事务的序列化顺序。</p>
+<p><img src="https://s2.loli.net/2025/02/21/TYyGP13e4fojS9O.png" alt="image"></p>
+<p>read timestamp 确定当前事务可以看到的版本。例如，如果我们进行read timestamp &#x3D; 3的事务，则在此示例中将看到A3，B3，C2和D3。如果read timestamp &#x3D; 2，它将看到A2，B1，C2。当事务开始时，read timestamp 将是最新提交的commit timestamp，以便事务能够在事务开始之前看到所做的一切。</p>
+<p>commit timestamp 是事务提交的时间。这是一个逻辑计数器，每次提交事务都会增加一次。当DBMS修改数据库中的单元时，DBMS将使用事务的commit timestamp。</p>
+<h2 id="WaterMark"><a href="#WaterMark" class="headerlink" title="WaterMark"></a>WaterMark</h2><p>实现watermark机制，要求更新watermark的时间复杂度不能超过O(log n)</p>
+<p>watermark是正在执行的transactions中的最小的read-timestamp，这一机制将会在后面的Stop-the-World Garbage Collection部分中使用到</p>
+<h1 id="Task-2-Storage-Format-and-Sequential-Scan"><a href="#Task-2-Storage-Format-and-Sequential-Scan" class="headerlink" title="Task #2 Storage Format and Sequential Scan"></a>Task #2 Storage Format and Sequential Scan</h1><p>Bustub将事务数据存储在三个地方：table heap，transaction manager以及每个事务内部。table heap总是包含最新数据，transaction manager的“page version info”存储了指向下一个修改的指针，在每个事务内部，我们以称为undo log的格式存储了事务修改的元组。</p>
+<ul>
+<li><p><strong>版本链</strong>：</p>
+<ul>
+<li>每个元组（Tuple）的头部包含指向旧版本的指针，形成链表结构。</li>
+<li>例如，在 Bustub 中，每个 <code>Tuple</code>​ 可能包含 <code>txn_id</code>​（创建该版本的事务 ID）和 <code>begin_ts</code>​&#x2F;<code>end_ts</code>​（版本的有效时间范围）。</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://s2.loli.net/2025/02/22/Pp1JXQrdnmyICF2.png" alt="image"></p>
+<h2 id="Tuple-Reconstruction"><a href="#Tuple-Reconstruction" class="headerlink" title="Tuple Reconstruction"></a><strong>Tuple Reconstruction</strong></h2><p>在实现 Bustub 的 MVCC 时，<strong>Tuple Reconstruction（元组重建）</strong>  是一个关键步骤，用于根据事务的隔离级别和可见性规则，从版本链中选择正确的数据版本，并构造出事务可见的元组。</p>
+<blockquote>
+<p><strong>为什么需要 Tuple Reconstruction？</strong></p>
+<ul>
+<li>每个事务需要看到符合其隔离级别的数据版本。</li>
+<li>由于同一数据可能有多个版本（通过版本链链接），查询时需要遍历版本链，找到对当前事务可见的版本。</li>
+</ul>
+</blockquote>
+<p>函数参数包括一个undo_log vector，ReconstructTuple过程就是遍历这些undo_logs，将base_tuple转化为对应的tuple，同时需要注意处理delete操作。</p>
+<h2 id="Sequential-Scan-Tuple-Retrieval"><a href="#Sequential-Scan-Tuple-Retrieval" class="headerlink" title="Sequential Scan &#x2F; Tuple Retrieval"></a>Sequential Scan &#x2F; Tuple Retrieval</h2><p>修改Project中实现的 Sequential Scan executor，遍历table heap，检索read timestamp并通过ReconstructTuple得到需要的Tuple。</p>
+<p>lab提示需要注意三种情况：</p>
+<ol>
+<li>table heap中的元组是最新数据。可以通过比较table heap tuple的 meta data 和transaction读取时间戳来知道这一点。在这种情况下，可以直接返回元组，或者直接跳过已删除元组。</li>
+<li>table heap中的元组包含当前transaction的修改。在Bustub中，有效的 commit timestamp 范围从0到TXN_START_ID -1。<strong>如果时间戳的最高数值位在表堆中设置为1</strong>，则意味着元组通过transaction修改，transaction尚未commit。我们称此时间戳为“临时时间戳”，由TXN_START_ID + TXN_HUMAN_REDABLE_ID &#x3D; TXN_ID计算。 BUSTUB中的第一个事务ID是TXN_START_ID。这是一个很大很难解释的数字，因此我们可以通过取它的最高位来生成TXN_HUMAN_REDABLE_ID。在以下示例中，我们将使用txnX，其中X是TXN_HUMAN_REDABLE_ID。undo log 将永远不会包含事务临时时间戳。例如，如果当前的transaction的可读ID为3，并且它用时间戳TXN_START_ID + 3扫描基本元组，则此元组通过此事务修改，并且应直接返回给用户。否则，transaction应恢复该元组的过去版本并将其退还给用户。</li>
+<li>table heap中的元组是（1）通过另一个未承诺的事务修改，或（2）比事务读取时间戳更新。在这种情况下，您需要迭代版本链以在读取时间戳后收集所有撤消日志，并恢复元组的过去版本。</li>
+</ol>
+<p>‍</p>
+<p><img src="https://s2.loli.net/2025/02/23/RsuQJbCcIqwB3gX.png" alt="image"></p>
+<p>‍</p>
+<ol>
+<li><strong>表堆中的元组是最新的数据</strong></li>
+</ol>
+<ul>
+<li><p><strong>判断条件</strong>：<br>通过比较表堆元组元数据中的时间戳（timestamp）与事务的读取时间戳（read timestamp）。</p>
+<ul>
+<li>如果元组的时间戳早于或等于事务的读取时间戳，并且元组未被删除，则该元组是最新的数据。</li>
+<li>如果元组已被删除（例如，删除标记被设置），则该元组不可用。</li>
+</ul>
+</li>
+<li><p><strong>处理方式</strong>：</p>
+<ul>
+<li>如果元组是最新的且未被删除，Sequential Executor 直接返回该元组。</li>
+<li>如果元组已被删除，则跳过该元组。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ol start="2">
+<li><strong>表堆中的元组被当前事务修改</strong></li>
+</ol>
+<ul>
+<li><p><strong>判断条件</strong>：<br>在 BusTub 中，如果元组的时间戳是一个“临时时间戳”（即时间戳的最高位被设置为 1），表示该元组被某个事务修改，且该事务尚未提交。</p>
+<ul>
+<li>临时时间戳的计算方式为：TXN_START_ID + txn_human_readable_id = txn_id。</li>
+<li>如果该临时时间戳等于当前事务的 txn_id，说明该元组是被当前事务修改的。</li>
+<li>如果临时时间戳不等于当前事务的 txn_id，说明该元组被其他未提交的事务修改。</li>
+</ul>
+</li>
+<li><p><strong>处理方式</strong>：</p>
+<ul>
+<li>如果元组被当前事务修改（即临时时间戳等于当前事务的 txn_id），Sequential Executor 直接返回该元组，因为当前事务可以看到自己的修改。</li>
+<li>如果元组被其他未提交事务修改，当前事务不应该看到这个修改，需要恢复到之前的版本（具体处理方式见第 3 种情况）。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ol start="3">
+<li><strong>表堆中的元组被其他未提交事务修改或比读取时间戳更新</strong></li>
+</ol>
+<ul>
+<li><p><strong>判断条件</strong>：</p>
+<ul>
+<li>元组的时间戳是一个临时时间戳，且不等于当前事务的 txn_id，说明元组被其他未提交事务修改。</li>
+<li>元组的时间戳晚于事务的读取时间戳，说明元组是在读取时间戳之后被修改的。</li>
+</ul>
+</li>
+<li><p><strong>处理方式</strong>：<br>在这两种情况下，当前事务不应该看到该版本的元组。需要执行以下步骤：</p>
+<ul>
+<li>遍历版本链（version chain），收集读取时间戳之后的所有 undo logs。</li>
+<li>根据 undo logs 恢复到读取时间戳时的元组版本，并返回该版本。</li>
+</ul>
+</li>
+</ul>
+<p>实际上还有一种特殊情况，那就是undo_log中最早的版本也没法匹配read timestamp，这时候只能跳过。 <em>（把上面的条件都实现了一遍发现也过不了测试，最后发现是这种情况，不能把undo_log全找出来就进行reconstruct，还要检查一次是否达到了对应的版本）</em></p>
+<p>‍</p>
+<h1 id="Task-3-MVCC-Executors"><a href="#Task-3-MVCC-Executors" class="headerlink" title="Task #3 MVCC Executors"></a>Task #3 MVCC Executors</h1><h2 id="Insert-Executor"><a href="#Insert-Executor" class="headerlink" title="Insert Executor"></a>Insert Executor</h2><p>Insert Executor 实现与Project＃3中的实现几乎相同。只需在 table heap 中创建一个新的元组即可。需要正确设置元组元数据。table heap 中的时间戳应将其设置为执行事务的临时时间戳，如Task 2.2中所述。无需修改版本链接，该元组的next version link 应为nullopt，这表明该元组没有以前的版本。您还应该将RID添加到write set中。下图是将txn9插入（d，3）的插图。</p>
+<p><img src="https://s2.loli.net/2025/02/24/JWvEdH3aAtxbYMk.png" alt="image"></p>
+<p>实现单线程版本的并不麻烦，lab提供了UpdateUndolink函数，将prev_version_参数置为std::nullopt即可，单线程版本暂时不需要check函数，然后在插入Tuple时将Meta数据的ts设置为事务的临时时间戳就行了。</p>
+<h2 id="Commit"><a href="#Commit" class="headerlink" title="Commit"></a>Commit</h2><p>一次只允许一次事务输入提交功能，这个部分要用到事务管理器中的commit_mutex_。Lab说明给出了如下实现步骤：</p>
+<ul>
+<li>获取提交锁（commit mutex）。</li>
+<li>获取 commit_ts，但在提交完成前不增加 last_committed_ts（因为提交时间戳的内容在提交结束前尚未稳定）。</li>
+<li>遍历事务修改的所有元组（通过 write set），将元组的时间戳设置为 commit_ts。</li>
+<li>将事务状态设置为 COMMITTED，并更新事务的 commit_ts。</li>
+<li>更新 last_committed_ts。</li>
+</ul>
+<h2 id="Update-and-Delete-Executor"><a href="#Update-and-Delete-Executor" class="headerlink" title="Update and Delete Executor"></a>Update and Delete Executor</h2><p>在此任务中，需要实现逻辑以生成撤消日志，并更新table heap元组。update 和delete executor基本上是相同的（您可以在 execution_common.cpp 中实现共享功能），update executor 将新版本的tuple放到table heap 中，而delete将is_delete标志设置到tuple。</p>
+<p>在更新和删除之前，需要检查写-写冲突，如果一个tuple正在被一个未提交的事务修改，那么其他事务都不能修改它。另一种冲突情况是，一个事务A删除了元组并提交，另一个事务B发生在A之前且删除了同样的元组。当检测到冲突时需要将事务的状态应该被设置为TAINTED，并抛出executionException，标记SQL语句无法执行。</p>
+<p>更新执行程序应作为Pipeline breaker实现：在编写任何更新之前，应首先将所有元组从子执行程序扫描到本地缓冲区。之后，它应该从本地缓冲区中拉出元组，计算更新的元组，然后在表堆上执行更新。</p>
+<p>在这部分所有测试用例都是单线程，因此无需考虑更新 &#x2F;删除过程中可能发生的竞争条件。检测写入冲突的唯一条件是检查基本元组元的时间戳。</p>
+<p>检查写入冲突后，为修改创建撤消日志。对于删除，生成一个包含原始元组的完整数据的撤消日志。对于更新，生成一个仅包含修改列的撤消日志。将撤消日志存储在当前事务中。如果当前的事务已经修改了元组并为元组设有撤消日志，则应更新现有的撤消日志，而不是创建新的日志。</p>
+<p>下面两张图片展示了Delete操作和Update操作是如何插入Undolog的。</p>
+<p><img src="https://s2.loli.net/2025/02/25/6fM5dEzoJucZx2Q.png" alt="image"></p>
+<p><img src="https://s2.loli.net/2025/02/25/H9J4oVvlgueXnGA.png" alt="image"></p>
+<p>此外在检查写-写冲突之前还需要检查是否有自我修改的情况。如果某个元组已经被当前事务修改过，那么不应该将它视为冲突。一个事务中最多为每个RID创建一个undo log，因此，如果事务两次更新元组，则需要更新已经创建好的的undo log，或者仅更新table heap。</p>
+<p><img src="https://s2.loli.net/2025/02/25/Ijsx4myogN1QReY.png" alt="image"></p>
+<p>在上图的示例中，尽管元组被多次修改，但仍保持一个undo log。还需要注意一点，从(B,5)修改为(A,5)时，尽管undo log可以变为（_,3)，但并没有这样做，undo log规定为只能添加值而不能删除值，这样更容易处理并发问题。如果该tuple是新插入的，那么在同一个事务中无论怎么再修改也不用添加undo log，如下图所示：</p>
+<p><img src="https://s2.loli.net/2025/02/25/oLleOdqzcSCjwZa.png" alt="image"></p>
+<p>由于此时我们没有索引，并且仅使用RID识别所有元素，因此版本链的删除标记只可能存在在头部（在table heap中）。undo log中不会有删除标记，因为删除后不会在同一位置重新创建元组。因此，在生成撤消日志时，可以跳过很多情况。</p>
+<p>最后总结一下，要实现这部分功能，应该：</p>
+<ol>
+<li>从child exectuor获取RID</li>
+<li>生成要更新的元组</li>
+<li>在有自我修改的情况下，只需要更新table heap并有选择地更新undo log</li>
+<li>否则，生成undo log，链接到链表中</li>
+</ol>
+<p>在实现的过程中处理写-写冲突时，如果tuple的timestamp不是临时时间戳，那么还要将它与txn的read ts比较，如果tuple的比txn的大，那么这也是一种写-写冲突</p>
+<p>‍</p>
+<h2 id="Stop-the-World-Garbage-Collection"><a href="#Stop-the-World-Garbage-Collection" class="headerlink" title="Stop-the-World Garbage Collection"></a>Stop-the-World Garbage Collection</h2><p>当调用GarbageCollection时，手动触发垃圾收集。仅当所有事务暂停时，测试用例才会调用此功能。因此，在收集垃圾时，不必太担心竞争条件。在任务1中，我们已经实施了一种算法来计算water mark（系统中最低的read_ts）。在此任务中，您将需要删除所有不包含具有最低read_ts（Watermark）事务的undo log的所有事务。</p>
+<p><img src="https://s2.loli.net/2025/02/26/m8bSsvt2iuK9Axr.png" alt="image"></p>
+<p>Garbage Collection并不是将所有ts小于watermark的undolog全部删除，而是要遍历所有事务和undolog进行推导，如上图所示，此时的watermark是3，但是对于Txn9 (read_ts &#x3D; 3)，当它读取到 (C, 4) 时，由于 ts &#x3D; 4 &gt; read_ts，所以它要读取undolog找到 ts &lt;&#x3D; read_ts 的版本，此时只有 (C, 2) ts &#x3D; 2 能被读取，所以我们不能 collect 该 tuple。</p>
+<p>但是不要被lab说明误导，实际上不需要搞清楚watermark下哪些Undolog会被访问，哪些不会，这样会造成大量开销，而且实现起来非常麻烦。我们只需要保持一个watermark可能被访问到的旧版本（该版本应该是所有watermark之上的versionlink所能触及到的watermark之下的一个交集），然后将该旧版本之后的版本删除就可以了，这样就算保留的第一个旧版本这次删除不掉，随着watermark的上移，以后也能被删除掉。</p>
+<p><strong>只有COMMIT或者ABORT状态的事务能够被删除。</strong></p>
+<p><img src="https://s2.loli.net/2025/02/27/F1zOQRJBeMfLtjN.jpg" alt="Screenshot_20250227_113927_com_superace_updf_PrimaryPDFEditActivity"></p>
+<h1 id="Task-4-Primary-Key-Index"><a href="#Task-4-Primary-Key-Index" class="headerlink" title="Task #4 Primary Key Index"></a>Task #4 Primary Key Index</h1><h2 id="Inserts"><a href="#Inserts" class="headerlink" title="Inserts"></a>Inserts</h2><p>在 insert executor 中正确处理插入主键的情景，要考虑多个事务插入相同主键的情况。</p>
+<ol>
+<li>首先检查主键已经存在的情况，在后面的delete部分它可能被设置为指向被删除的数据，在此处先将其设置为TAINTED状态。</li>
+<li>然后使用临时时间戳在 table heap 创建元组</li>
+<li>之后，将元组插入索引中。如果违反唯一的密钥约束，则您的哈希索引应返回false。在（1）和（3）之间，其他事务可能正在做同一件事，并且在当前事务创建它之前，在索引中创建了一个新条目。在这种情况下，您将需要中止事务，并且 table heap 中会有一个元组，而没有一个索引指向该元组。</li>
+</ol>
+<h2 id="Index-Scan-Deletes-and-Updates"><a href="#Index-Scan-Deletes-and-Updates" class="headerlink" title="Index Scan, Deletes and Updates"></a>Index Scan, Deletes and Updates</h2><p>为删除和更新 executor 添加索引支持。首先实现muti-version index scan executor.</p>
+<p>一旦在索引中创建了一个条目，即使标记了元组已删除元组，它将始终指向同一RID，也不会删除，因此较早的事务仍然可以使用index scan executor访问历史记录。在这一点上，您还需要修改insert executor。考虑insert executor插入一个已经被删除了的元组的情况。因为索引创建后只会指向同一个RID，所以应更新已删除的元组，而不是创建新的条目。需要正确处理写-写冲突检测和唯一性约束检测。</p>
+<blockquote>
+<p>在此之前delete操作只会出现在undolog链的头部，实现了这一部分后delete可能会出现在undolog的中间位置，所以之前简化的update和delete executor都要修改</p>
+</blockquote>
+<p><img src="https://s2.loli.net/2025/03/21/UdhsXwpnJTLN1cA.png" alt="image"></p>
+<p>此时，您还需要考虑其他竞争条件。例如，如果多个事务正在同时更新版本链接。您应该正确地中止其中一些，让其中一个继续而不会丢失任何数据。在PageVersionInfo中，我们有in_progress字段，该字段指示是否已经有事务在该元组上进行操作。通过此任务，您需要使用此字段来避免竞争条件。另外，您会注意到，在上面的示例中的第二个更改中，table heap中的时间戳有时会与第一个undolog的时间戳相同。实现更新和删除后，Sequential scan executor 还应正确处理此情况。</p>
+<p>‍</p>
+<h2 id="Primary-Key-Update"><a href="#Primary-Key-Update" class="headerlink" title="Primary Key Update"></a>Primary Key Update</h2><p>这部分是为了解决更新primary key指向的tuple时会出现的问题。例如当执行下面这条语句时：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> maintable <span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">0</span>), (<span class="number">2</span>, <span class="number">0</span>), (<span class="number">3</span>, <span class="number">0</span>), (<span class="number">4</span>, <span class="number">0</span>)</span><br><span class="line"><span class="keyword">UPDATE</span> <span class="keyword">table</span> <span class="keyword">SET</span> col1 <span class="operator">=</span> col1 <span class="operator">+</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>如果只是普通地使用UpdateTupleInPlace的话，primary key会指向错误的tuple，如果尝试访问index &#x3D; 1处的值，会返回(2 ,0)，但实际上应该返回空。为了解决这个问题，在updates时，应该一条一条地删除tuple, 同时记录新的tuple, 在最后将新的tuple一并插入到table中。</p>
+<p><img src="https://s2.loli.net/2025/03/24/qVjXz7RGLYagHWs.png" alt="image"></p>
+<h3 id="implement"><a href="#implement" class="headerlink" title="implement"></a>implement</h3><p>为了方便加锁，先在execution_common下添加一个加锁的函数</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LockVersionChain</span><span class="params">(TransactionManager *txn_mgr, RID rid)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> version_link_op = txn_mgr-&gt;<span class="built_in">GetVersionLink</span>(rid);</span><br><span class="line">  <span class="keyword">if</span> (version_link_op.<span class="built_in">has_value</span>()) &#123;</span><br><span class="line">    <span class="keyword">return</span> txn_mgr-&gt;<span class="built_in">UpdateVersionLink</span>(rid, VersionUndoLink&#123;version_link_op-&gt;prev_, <span class="literal">true</span>&#125;,</span><br><span class="line">                                      [version_link_op](std::optional&lt;VersionUndoLink&gt; origin_version_link_op) &#123;</span><br><span class="line">                                        <span class="built_in">return</span> (!origin_version_link_op-&gt;in_progress_) &amp;&amp;</span><br><span class="line">                                               origin_version_link_op-&gt;prev_ == version_link_op-&gt;prev_;</span><br><span class="line">                                      &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> txn_mgr-&gt;<span class="built_in">UpdateVersionLink</span>(</span><br><span class="line">      rid, VersionUndoLink&#123;UndoLink&#123;&#125;, <span class="literal">true</span>&#125;,</span><br><span class="line">      [](std::optional&lt;VersionUndoLink&gt; origin_version_link_op) &#123; <span class="keyword">return</span> !origin_version_link_op.<span class="built_in">has_value</span>(); &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>将index scan 改造成MVCC版本，这部分跟Seq scan部分差不多。</p>
+<p>然后是insert executor 部分，在4.1中在插入之前如果检测到主键已经存在，就要abort。现在需要判断主键对应的tuple是否被删除，如果不是才abort。如果删除了，需要在原先的undolog chain上添加一个undolog。</p>
+<p>但是在实际进行封锁的时候遇到了“一根筋变成两头堵”的情况：</p>
+<ul>
+<li>在封锁之前得获得tuple的时间戳，检查是否是self-modify，如果是，就不需要封锁，因为没有别的事务能访问到该元组，而且之前的操作中也可能已经进行了封锁</li>
+<li>但是如果不是self-modify，且未被其他事务修改过，这种情况下简单地直接封锁也会出现问题，因为获取tuple ts的时候没有进行封锁，所以可能会出现多个事务都获取到该tuple ts的情况，而如果时间差非常巧合的话，一个事务封锁并提交解锁后，另一个事务恰好能再次进行封锁，这就导致了一个tuple可能会在同一个read ts被多个txn修改。</li>
+</ul>
+<p>目前能想到的方法就是在LockVersionChain后再获取一次ts并进行检查，如果发现不对就要进行abort。在第一次获取ts的时候就加锁肯定是不行的，因为并不知道事务在之前有没有进行加锁，处理起来会非常麻烦</p>
+<h2 id="Bug"><a href="#Bug" class="headerlink" title="Bug"></a>Bug</h2><h3 id="W-W-confilct"><a href="#W-W-confilct" class="headerlink" title="W-W confilct"></a>W-W confilct</h3><p>在检查 tuple_ts 时，应该分为两种情况：</p>
+<ul>
+<li>tuple_ts &gt;&#x3D; TXN_START_ID：说明tuple_ts是临时时间戳，进一步检查修改该tuple的事务是不是自己</li>
+<li>tuple_ts &lt; TXN_START_ID：说明tuple还未被修改，如果要对tuple进行修改的话，需要检查tuple的ts是不是大于txn的read ts，防止对新的tuple进行修改。</li>
+</ul>
+<p>写代码时为了偷懒将所有需要abort的情况用 || 连接了起来，但是只写了tuple_ts &gt; read ts，这导致tuple_ts &#x3D;&#x3D; 临时时间戳的情况也abort。</p>
+<p>‍</p>
+<h3 id="版本丢失"><a href="#版本丢失" class="headerlink" title="版本丢失"></a>版本丢失</h3><p><img src="https://s2.loli.net/2025/03/24/igHSABqFGenmdQ1.png" alt="image"></p>
+<p>进行插入操作后：</p>
+<p><img src="https://s2.loli.net/2025/03/24/x698Wu7EhjwVkc5.png" alt="image"></p>
+<p>忘了给新的undolog设置prev_version_😅</p>
+<p>‍</p>
+<p>‍</p>
+<h3 id="std-optional访问错误"><a href="#std-optional访问错误" class="headerlink" title="std::optional访问错误"></a>std::optional访问错误</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">unknown file: Failure</span><br><span class="line">C++ exception with description <span class="string">&quot;bad optional access&quot;</span> thrown in the test body.</span><br></pre></td></tr></table></figure>
+
+<p>造成该错误的原因是在实现了Task 4.2部分后，含delete标志的Undolog会出现在版本链中间，进行RestructTuple的时候可能会返回nullopt，这时需要添加一个判断。</p>
+<p>‍</p>
+<h3 id="Hidden-test-error"><a href="#Hidden-test-error" class="headerlink" title="Hidden test error"></a>Hidden test error</h3><p>Update test 的一个 hidden test 显示超时，用G老师复现了一下测试代码检测到如下错误：</p>
+<p><img src="https://s2.loli.net/2025/03/25/b6q51YnLDMrXsTa.png" alt="image"></p>
+<p>又是optional访问的问题，原因是在删除tuple的时候，产生了两个连续的<del> undolog</p>
+<p><img src="https://s2.loli.net/2025/03/25/yNJQHzTEjRqfu57.png" alt="image"></p>
+<p>而在更新undolog时，因为要将上一个版本的tuple重构出来以进行undolog的修改，直接访问会导致未知错误。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">UndoLog undolog = txn_mgr-&gt;<span class="built_in">GetUndoLog</span>(last_undolink.<span class="built_in">value</span>());</span><br><span class="line"><span class="keyword">auto</span> res_tuple = <span class="built_in">ReconstructTuple</span>(&amp;table_info-&gt;schema_, tuple_tmp, ori_meta, &#123;undolog&#125;);</span><br><span class="line"><span class="built_in">UpdateUndoLog</span>(undolog, &amp;table_info-&gt;schema_, Tuple&#123;&#125;, res_tuple.<span class="built_in">value</span>(), <span class="literal">true</span>);</span><br><span class="line">txn-&gt;<span class="built_in">ModifyUndoLog</span>(last_undolink.<span class="built_in">value</span>().prev_log_idx_, undolog);</span><br></pre></td></tr></table></figure>
+
+<p>‍</p>
+<h3 id="Optimizer-优化失败"><a href="#Optimizer-优化失败" class="headerlink" title="Optimizer 优化失败"></a>Optimizer 优化失败</h3><p><img src="https://s2.loli.net/2025/03/25/RW1ixvYS6ajrTwN.png"></p>
+<p>gradescope上的最后两分，来自Optimizer未将seqscan优化为indexscan</p>
+<p>​​</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://jyjays.github.io">Jyjays</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://jyjays.github.io/2025/03/28/Query%20Execution%20+%20MVCC/Project%204%20Concurrency%20Control/">https://jyjays.github.io/2025/03/28/Query%20Execution%20+%20MVCC/Project%204%20Concurrency%20Control/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MVCC/">MVCC</a><a class="post-meta__tags" href="/tags/Concurrency-Control/">Concurrency Control</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2025/03/30/MIT%206.5840/ShardKV/ShardKV%20review/"><img class="prev-cover" src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">ShardKV Review</div></div></a></div><div class="next-post pull-right"><a href="/2025/03/28/Query%20Execution%20+%20MVCC/Project%203%20Query%20Execution/Bustub%20Query%20Execution%E5%9B%9E%E9%A1%BE/"><img class="next-cover" src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Bustub Query Execution回顾</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2025/03/28/Query%20Execution%20+%20MVCC/Project%203%20Query%20Execution/Bustub%20Query%20Execution%E5%9B%9E%E9%A1%BE/" title="Bustub Query Execution回顾"><img class="cover" src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-28</div><div class="title">Bustub Query Execution回顾</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2025/02/15/Yhj9w85grSxptQT.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Jyjays</div><div class="author-info__description">A CS learner who is interested in DataBase System and Music.</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">16</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">13</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-1-TimeStamps"><span class="toc-number">1.</span> <span class="toc-text">Task #1 TimeStamps</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#WaterMark"><span class="toc-number">1.1.</span> <span class="toc-text">WaterMark</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-2-Storage-Format-and-Sequential-Scan"><span class="toc-number">2.</span> <span class="toc-text">Task #2 Storage Format and Sequential Scan</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Tuple-Reconstruction"><span class="toc-number">2.1.</span> <span class="toc-text">Tuple Reconstruction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sequential-Scan-Tuple-Retrieval"><span class="toc-number">2.2.</span> <span class="toc-text">Sequential Scan &#x2F; Tuple Retrieval</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-3-MVCC-Executors"><span class="toc-number">3.</span> <span class="toc-text">Task #3 MVCC Executors</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Insert-Executor"><span class="toc-number">3.1.</span> <span class="toc-text">Insert Executor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Commit"><span class="toc-number">3.2.</span> <span class="toc-text">Commit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Update-and-Delete-Executor"><span class="toc-number">3.3.</span> <span class="toc-text">Update and Delete Executor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Stop-the-World-Garbage-Collection"><span class="toc-number">3.4.</span> <span class="toc-text">Stop-the-World Garbage Collection</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Task-4-Primary-Key-Index"><span class="toc-number">4.</span> <span class="toc-text">Task #4 Primary Key Index</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Inserts"><span class="toc-number">4.1.</span> <span class="toc-text">Inserts</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Index-Scan-Deletes-and-Updates"><span class="toc-number">4.2.</span> <span class="toc-text">Index Scan, Deletes and Updates</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Primary-Key-Update"><span class="toc-number">4.3.</span> <span class="toc-text">Primary Key Update</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#implement"><span class="toc-number">4.3.1.</span> <span class="toc-text">implement</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bug"><span class="toc-number">4.4.</span> <span class="toc-text">Bug</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#W-W-confilct"><span class="toc-number">4.4.1.</span> <span class="toc-text">W-W confilct</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E4%B8%A2%E5%A4%B1"><span class="toc-number">4.4.2.</span> <span class="toc-text">版本丢失</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#std-optional%E8%AE%BF%E9%97%AE%E9%94%99%E8%AF%AF"><span class="toc-number">4.4.3.</span> <span class="toc-text">std::optional访问错误</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hidden-test-error"><span class="toc-number">4.4.4.</span> <span class="toc-text">Hidden test error</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Optimizer-%E4%BC%98%E5%8C%96%E5%A4%B1%E8%B4%A5"><span class="toc-number">4.4.5.</span> <span class="toc-text">Optimizer 优化失败</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/03/30/MIT%206.5840/ShardKV/ShardKV%20review/" title="ShardKV Review"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ShardKV Review"/></a><div class="content"><a class="title" href="/2025/03/30/MIT%206.5840/ShardKV/ShardKV%20review/" title="ShardKV Review">ShardKV Review</a><time datetime="2025-03-30T08:00:00.000Z" title="Created 2025-03-30 00:00:00">2025-03-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/28/Query%20Execution%20+%20MVCC/Project%204%20Concurrency%20Control/" title="Project 4 Concurrency Control"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Project 4 Concurrency Control"/></a><div class="content"><a class="title" href="/2025/03/28/Query%20Execution%20+%20MVCC/Project%204%20Concurrency%20Control/" title="Project 4 Concurrency Control">Project 4 Concurrency Control</a><time datetime="2025-03-28T08:00:00.000Z" title="Created 2025-03-28 00:00:00">2025-03-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/28/Query%20Execution%20+%20MVCC/Project%203%20Query%20Execution/Bustub%20Query%20Execution%E5%9B%9E%E9%A1%BE/" title="Bustub Query Execution回顾"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Bustub Query Execution回顾"/></a><div class="content"><a class="title" href="/2025/03/28/Query%20Execution%20+%20MVCC/Project%203%20Query%20Execution/Bustub%20Query%20Execution%E5%9B%9E%E9%A1%BE/" title="Bustub Query Execution回顾">Bustub Query Execution回顾</a><time datetime="2025-03-28T08:00:00.000Z" title="Created 2025-03-28 00:00:00">2025-03-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/08/Project2%20Index.md/Project2%20Index/B+%20Tree%20questions/" title="B+ Tree questions"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="B+ Tree questions"/></a><div class="content"><a class="title" href="/2025/03/08/Project2%20Index.md/Project2%20Index/B+%20Tree%20questions/" title="B+ Tree questions">B+ Tree questions</a><time datetime="2025-03-08T08:00:00.000Z" title="Created 2025-03-08 00:00:00">2025-03-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/" title="B+ Tree"><img src="https://s2.loli.net/2025/02/15/fuHwdPDZ8cNslFC.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="B+ Tree"/></a><div class="content"><a class="title" href="/2025/02/28/Project2%20Index.md/Project2%20Index/B+%20Tree/" title="B+ Tree">B+ Tree</a><time datetime="2025-02-28T08:00:00.000Z" title="Created 2025-02-28 00:00:00">2025-02-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Jyjays</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
